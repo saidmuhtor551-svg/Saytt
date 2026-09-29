@@ -3,57 +3,209 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Современная страница</title>
-  <!-- Подключение CSS -->
+  <title>Маркетплейс</title>
+  <!-- Иконки FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <!-- Шапка сайта -->
-  <header class="header">
-    <div class="container header__container">
-      <a href="#" class="header__logo">Logo</a>
-      <nav class="header__nav nav">
-        <ul class="nav__list">
-          <li class="nav__item"><a href="#home" class="nav__link">Главная</a></li>
-          <li class="nav__item"><a href="#about" class="nav__link">О нас</a></li>
-          <li class="nav__item"><a href="#services" class="nav__link">Услуги</a></li>
-          <li class="nav__item"><a href="#contact" class="nav__link">Контакты</a></li>
-        </ul>
-      </nav>
+  <!-- ШАПКА САЙТА -->
+  <header class="navbar">
+    <div class="logo">
+      <i class="fa-solid fa-store"></i> Маркет
+    </div>
+    <div class="user-nav">
+      <span id="navUsername">Гость</span>
+      <button id="openAuthModalBtn" class="btn btn-primary btn-sm">Войти</button>
+      <button id="logoutBtn" class="btn btn-danger btn-sm hidden">Выйти</button>
     </div>
   </header>
 
-  <!-- Основной контент -->
-  <main class="main">
-    
-    <!-- Hero / Главная секция -->
-    <section class="hero">
-      <div class="container hero__container">
-        <h1 class="hero__title">Заголовок вашей страницы</h1>
-        <p class="hero__subtitle">Краткое описание или призыв к действию для пользователей.</p>
-        <button class="hero__btn" type="button">Начать</button>
+  <!-- ОСНОВНОЙ КОНТЕНТ -->
+  <main class="main-content">
+
+    <!-- 1. ВБЛАДКА: ТОВАРЫ (ГЛАВНАЯ) -->
+    <section id="marketSection" class="tab-content active">
+      <div class="section-header">
+        <h2><i class="fa-solid fa-cart-shopping"></i> Витрина товаров</h2>
+        <button id="shareSiteBtn" class="btn btn-secondary btn-sm"><i class="fa-solid fa-share-nodes"></i> Поделиться</button>
+      </div>
+      <div id="marketGrid" class="grid-container">
+        <!-- Товары рендерятся через JS -->
       </div>
     </section>
 
-    <!-- Секция с контентом -->
-    <section id="about" class="about">
-      <div class="container">
-        <h2 class="about__title">О нас</h2>
-        <p class="about__text">Здесь располагается основной текст или карточки с информацией.</p>
+    <!-- 2. ВКЛАДКА: ПРОДАТЬ -->
+    <section id="addSection" class="tab-content">
+      <h2><i class="fa-solid fa-plus-circle"></i> Выставить товар</h2>
+      <form id="sellForm" class="card-form">
+        
+        <div class="form-group">
+          <label>Название товара:</label>
+          <input type="text" id="prodTitle" placeholder="Введите название" required>
+        </div>
+
+        <div class="form-group">
+          <label>Тип товара:</label>
+          <select id="prodType">
+            <option value="image">С картинкой</option>
+            <option value="text">Текстовый файл / Аккаунт</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Ссылка на картинку (если выбрали с картинкой):</label>
+          <input type="url" id="prodImgUrl" placeholder="https://example.com/image.jpg">
+        </div>
+
+        <div class="form-group">
+          <label>Описание товара:</label>
+          <textarea id="prodDesc" rows="3" placeholder="Краткое описание" required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Секретные данные (выдаются при открытии):</label>
+          <textarea id="prodSecretData" rows="3" placeholder="Логин:пароль, ссылка, промокод и т.д." required></textarea>
+        </div>
+
+        <!-- ВОТ ПОЛЕ ПАРОЛЯ, КОТОРОГО НЕ ХВАТАЛО -->
+        <div class="form-group">
+          <label><i class="fa-solid fa-key"></i> Пароль для доступа к товару (необязательно):</label>
+          <input type="text" id="prodAccessPass" placeholder="Пароль для покупателя (оставьте пустым, если без пароля)">
+        </div>
+
+        <button type="submit" class="btn btn-success btn-block">Опубликовать товар</button>
+      </form>
+    </section>
+
+    <!-- 3. ВКЛАДКА: ЧАТ -->
+    <section id="chatSection" class="tab-content">
+      <div class="chat-container">
+        <div class="chat-sidebar">
+          <h3>Чаты</h3>
+          <div id="chatUsersList" class="chat-users-list">
+            <!-- Список пользователей рендерится через JS -->
+          </div>
+        </div>
+        <div class="chat-main">
+          <div id="chatHeader" class="chat-header">Выберите чат</div>
+          <div id="chatMessages" class="chat-messages">
+            <div class="empty-chat-msg">Выберите собеседника слева</div>
+          </div>
+          <form id="chatForm" class="chat-input-area">
+            <input type="text" id="chatInput" placeholder="Введите сообщение..." disabled>
+            <button type="submit" id="sendMsgBtn" class="btn btn-primary" disabled><i class="fa-solid fa-paper-plane"></i></button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. ВКЛАДКА: ПРОФИЛЬ И ПАНЕЛЬ АДМИНИСТРАЦИИ -->
+    <section id="profileSection" class="tab-content">
+      <div class="profile-card">
+        <div class="profile-header">
+          <i class="fa-solid fa-user-gear profile-avatar"></i>
+          <div>
+            <h2 id="profName">Гость</h2>
+            <span id="profRoleBadge" class="role-tag role-user">Пользователь</span>
+          </div>
+        </div>
+
+        <!-- ПАНЕЛЬ АДМИНИСТРАЦИИ (Видна только Админу / Владельцу) -->
+        <div id="adminPanel" class="admin-panel hidden">
+          <h3><i class="fa-solid fa-shield-halved"></i> Панель управления пользователями</h3>
+          <div id="userRolesList" class="admin-users-list">
+            <!-- Список зарегистрированных пользователей рендерится через JS -->
+          </div>
+        </div>
+
+        <h3>Мои выставленные товары</h3>
+        <div id="myProductsGrid" class="grid-container">
+          <!-- Товары текущего пользователя -->
+        </div>
       </div>
     </section>
 
   </main>
 
-  <!-- Подвал сайта -->
-  <footer class="footer">
-    <div class="container footer__container">
-      <p class="footer__copy">&copy; 2026 Все права защищены.</p>
-    </div>
-  </footer>
+  <!-- НИЖНЯЯ НАВИГАЦИЯ (ТАБЫ) -->
+  <nav class="bottom-nav">
+    <button id="tabMarketBtn" class="nav-item active">
+      <i class="fa-solid fa-shop"></i>
+      <span>Товары</span>
+    </button>
+    <button id="tabAddBtn" class="nav-item">
+      <i class="fa-solid fa-plus"></i>
+      <span>Продать</span>
+    </button>
+    <button id="tabChatBtn" class="nav-item">
+      <i class="fa-solid fa-comments"></i>
+      <span>Чат</span>
+    </button>
+    <button id="tabProfileBtn" class="nav-item">
+      <i class="fa-solid fa-user"></i>
+      <span>Профиль</span>
+    </button>
+  </nav>
 
-  <!-- Подключение JS (если нужен) -->
-  <script src="main.js"></script>
+  <!-- МОДАЛЬНОЕ ОКНО АВТОРИЗАЦИИ / РЕГИСТРАЦИИ -->
+  <div id="authModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card">
+      <span id="closeAuthModal" class="close-btn">&times;</span>
+      
+      <div class="auth-tabs">
+        <button id="showLoginBtn" class="auth-tab-btn active">Вход</button>
+        <button id="showRegisterBtn" class="auth-tab-btn">Регистрация</button>
+      </div>
+
+      <!-- Форма Входа -->
+      <form id="loginForm" class="auth-form active">
+        <div class="form-group">
+          <label>Логин:</label>
+          <input type="text" id="loginUser" required>
+        </div>
+        <div class="form-group">
+          <label>Пароль:</label>
+          <input type="password" id="loginPass" required>
+        </div>
+        <p id="loginError" class="error-text hidden">Неверный логин или пароль!</p>
+        <button type="submit" class="btn btn-primary btn-block">Войти</button>
+      </form>
+
+      <!-- Форма Регистрации -->
+      <form id="registerForm" class="auth-form">
+        <div class="form-group">
+          <label>Придумайте Логин:</label>
+          <div class="input-with-preset">
+            <input type="text" id="regUser" required>
+            <select id="presetNick">
+              <option value="">Без приставки</option>
+              <option value="_PRO">_PRO</option>
+              <option value="_TOP">_TOP</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Придумайте Пароль:</label>
+          <input type="password" id="regPass" required>
+        </div>
+        <button type="submit" class="btn btn-success btn-block">Зарегистрироваться</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ОКНО БЛОКИРОВКИ ПОЛЬЗОВАТЕЛЯ -->
+  <div id="blockedOverlay" class="modal-overlay hidden">
+    <div class="modal-card text-center">
+      <i class="fa-solid fa-ban danger-icon"></i>
+      <h2>Ваш аккаунт заблокирован!</h2>
+      <p>Вы не можете совершать действия на сайте.</p>
+      <button id="blockedLogoutBtn" class="btn btn-danger">Выйти из аккаунта</button>
+    </div>
+  </div>
+
+  <!-- Подключение JS -->
+  <script src="script.js"></script>
 </body>
 </html>
