@@ -2,18 +2,21 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  font-family: 'Segoe UI', sans-serif;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 body {
   background-color: #0f172a;
   color: #f8fafc;
   min-height: 100vh;
-  padding-bottom: 80px;
+  padding-bottom: 70px; /* Mobil menyu uchun joy */
 }
 
-.hidden { display: none !important; }
+.hidden {
+  display: none !important;
+}
 
+/* Navbar (Kompyuter va umumiy stil) */
 .navbar {
   display: flex;
   justify-content: space-between;
@@ -24,40 +27,36 @@ body {
   position: sticky;
   top: 0;
   z-index: 100;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
-.logo { font-weight: bold; color: #38bdf8; display: flex; align-items: center; gap: 8px; }
-.user-auth-zone { display: flex; align-items: center; gap: 10px; }
-.user-display { font-weight: 600; color: #cbd5e1; font-size: 0.9rem; }
-
-.coins-badge {
-  background: #2d2415;
-  border: 1px solid #f59e0b;
-  color: #f59e0b;
-  padding: 4px 10px;
-  border-radius: 20px;
+.logo {
+  font-size: 1.3rem;
   font-weight: bold;
-  font-size: 0.85rem;
+  color: #38bdf8;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .nav-links {
   display: flex;
-  justify-content: center;
-  gap: 10px;
-  background: #1e293b;
-  padding: 10px;
-  border-bottom: 1px solid #334155;
+  gap: 8px;
 }
 
 .nav-btn {
   background: transparent;
   border: none;
   color: #94a3b8;
-  padding: 8px 16px;
+  padding: 8px 12px;
   border-radius: 8px;
   cursor: pointer;
   font-size: 0.9rem;
-  transition: 0.3s;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .nav-btn:hover, .nav-btn.active {
@@ -65,48 +64,525 @@ body {
   color: #38bdf8;
 }
 
-.container { max-width: 1000px; margin: 20px auto; padding: 0 15px; }
-.tab-content { display: none; }
-.tab-content.active { display: block; }
+.user-auth-zone {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
 
+.user-display {
+  font-weight: 600;
+  color: #cbd5e1;
+  font-size: 0.85rem;
+}
+
+/* Container & Sections */
+.container {
+  max-width: 1100px;
+  margin: 20px auto;
+  padding: 0 15px;
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.section-header h2 {
+  font-size: 1.2rem;
+}
+
+/* Cards & Grid */
 .cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 15px;
-  margin-top: 15px;
 }
 
 .card {
   background-color: #1e293b;
   border: 1px solid #334155;
-  border-radius: 10px;
+  border-radius: 12px;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s;
 }
 
-.card img { width: 100%; height: 140px; object-fit: cover; }
-.card-body { padding: 12px; }
-.seller-info { font-size: 0.8rem; color: #38bdf8; }
-.key-price { color: #f59e0b; font-weight: bold; margin: 8px 0; }
-.unlocked-data { background: #064e3b; color: #a7f3d0; padding: 8px; border-radius: 6px; margin-top: 8px; font-size: 0.85rem; word-break: break-all; }
+.card:hover {
+  transform: translateY(-3px);
+}
 
-.btn { padding: 8px 12px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; }
-.btn-primary { background: #0284c7; color: white; }
-.btn-warning { background: #d97706; color: white; }
-.btn-danger { background: #dc2626; color: white; }
+.card img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+}
+
+.text-type-badge {
+  background: #6366f1;
+  color: #fff;
+  padding: 20px;
+  text-align: center;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.card-body {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex: 1;
+}
+
+.seller-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  color: #38bdf8;
+  margin-bottom: 8px;
+}
+
+.card h3 {
+  margin-bottom: 6px;
+  font-size: 1.1rem;
+}
+
+.card p {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  margin-bottom: 12px;
+}
+
+.access-zone {
+  border-top: 1px solid #334155;
+  padding-top: 8px;
+  margin-top: 8px;
+}
+
+.access-zone input {
+  flex: 1;
+  background-color: #0f172a;
+  border: 1px solid #334155;
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+.unlocked-data {
+  margin-top: 8px;
+  padding: 8px;
+  background-color: #064e3b;
+  border: 1px solid #10b981;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  color: #a7f3d0;
+  word-break: break-all;
+}
+
+/* Buttons */
+.btn {
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: background 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.btn-primary { background-color: #0284c7; color: #fff; }
+.btn-primary:hover { background-color: #0369a1; }
+.btn-secondary { background-color: #334155; color: #fff; }
+.btn-secondary:hover { background-color: #475569; }
+.btn-danger { background-color: #dc2626; color: #fff; }
+.btn-danger:hover { background-color: #b91c1c; }
+.btn-warning { background-color: #d97706; color: #fff; }
+.btn-warning:hover { background-color: #b45309; }
+.btn-success { background-color: #16a34a; color: #fff; }
+.btn-success:hover { background-color: #15803d; }
 .btn-block { width: 100%; }
 
-.form-card, .profile-card { background: #1e293b; padding: 20px; border-radius: 10px; max-width: 500px; margin: 0 auto; }
-.form-group { margin-bottom: 12px; display: flex; flex-direction: column; gap: 4px; }
-.form-group input, .form-group select, .form-group textarea { background: #0f172a; border: 1px solid #334155; color: white; padding: 8px; border-radius: 6px; }
+/* Forms */
+.form-card {
+  background-color: #1e293b;
+  padding: 20px;
+  border-radius: 12px;
+  max-width: 600px;
+  margin: 0 auto;
+}
 
-.admin-panel { background: #0f172a; padding: 15px; border-radius: 8px; border: 1px solid #f59e0b; margin: 15px 0; }
-.user-role-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #334155; }
+.form-group {
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
 
-.modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 1000; }
-.modal-content { background: #1e293b; padding: 20px; border-radius: 10px; width: 320px; position: relative; }
-.close-modal { position: absolute; right: 15px; top: 10px; cursor: pointer; font-size: 1.2rem; }
-.modal-tabs { display: flex; margin-bottom: 15px; border-bottom: 1px solid #334155; }
-.modal-tab-btn { flex: 1; padding: 8px; background: none; border: none; color: #94a3b8; cursor: pointer; }
-.modal-tab-btn.active { color: #38bdf8; border-bottom: 2px solid #38bdf8; font-weight: bold; }
-.auth-form { display: none; }
-.auth-form.active { display: block; }
+.form-group label {
+  font-size: 0.85rem;
+  color: #cbd5e1;
+}
+
+.form-group input, .form-group select, .form-group textarea {
+  background-color: #0f172a;
+  border: 1px solid #334155;
+  color: #fff;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.secret-group {
+  background: #172554;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px dashed #3b82f6;
+}
+
+/* Chat Container */
+.chat-container {
+  display: flex;
+  height: 70vh;
+  background: #1e293b;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #334155;
+}
+
+.chat-sidebar {
+  width: 200px;
+  background: #0f172a;
+  padding: 10px;
+  border-right: 1px solid #334155;
+  overflow-y: auto;
+}
+
+.chat-sidebar h3 {
+  margin-bottom: 10px;
+  font-size: 0.9rem;
+  color: #94a3b8;
+}
+
+.chat-user-btn {
+  width: 100%;
+  text-align: left;
+  padding: 8px;
+  background: transparent;
+  border: none;
+  color: #cbd5e1;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-bottom: 4px;
+  font-size: 0.85rem;
+}
+
+.chat-user-btn:hover, .chat-user-btn.active {
+  background: #334155;
+  color: #38bdf8;
+}
+
+.chat-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-header {
+  padding: 10px 15px;
+  background: #1e293b;
+  border-bottom: 1px solid #334155;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.chat-messages {
+  flex: 1;
+  padding: 10px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.msg-bubble {
+  max-width: 80%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+.msg-me {
+  align-self: flex-end;
+  background: #0284c7;
+  color: #fff;
+}
+
+.msg-other {
+  align-self: flex-start;
+  background: #334155;
+  color: #fff;
+}
+
+.empty-chat-msg {
+  text-align: center;
+  color: #64748b;
+  margin-top: 30px;
+  font-size: 0.85rem;
+}
+
+.chat-input-area {
+  padding: 10px;
+  display: flex;
+  gap: 8px;
+  border-top: 1px solid #334155;
+}
+
+.chat-input-area input {
+  flex: 1;
+  background: #0f172a;
+  border: 1px solid #334155;
+  color: #fff;
+  padding: 8px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+/* Profile & Admin Panel */
+.profile-card {
+  background: #1e293b;
+  padding: 20px;
+  border-radius: 12px;
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.profile-avatar {
+  font-size: 2.5rem;
+  color: #38bdf8;
+}
+
+.role-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  margin-top: 4px;
+}
+
+.role-owner { background: #ef4444; color: #fff; }
+.role-admin { background: #f59e0b; color: #fff; }
+.role-user { background: #64748b; color: #fff; }
+
+.admin-panel {
+  background: #0f172a;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #f59e0b;
+  margin-bottom: 20px;
+}
+
+.admin-panel h3 {
+  color: #f59e0b;
+  margin-bottom: 8px;
+  font-size: 1rem;
+}
+
+.user-roles-list {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.user-role-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #1e293b;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+/* Modal */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.7);
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 15px;
+}
+
+.modal-content {
+  background: #1e293b;
+  padding: 20px;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 360px;
+  position: relative;
+}
+
+.close-modal {
+  position: absolute;
+  top: 10px; right: 15px;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.modal-tabs {
+  display: flex;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #334155;
+}
+
+.modal-tab-btn {
+  flex: 1;
+  padding: 8px;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+}
+
+.modal-tab-btn.active {
+  border-bottom: 2px solid #38bdf8;
+  color: #38bdf8;
+  font-weight: bold;
+}
+
+.auth-form {
+  display: none;
+}
+
+.auth-form.active {
+  display: block;
+}
+
+.error-msg {
+  color: #ef4444;
+  font-size: 0.8rem;
+  margin-bottom: 8px;
+}
+
+/* Blocked Overlay */
+.blocked-overlay {
+  position: fixed;
+  top:0; left:0; width:100%; height:100%;
+  background: rgba(15, 23, 42, 0.95);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.blocked-box {
+  text-align: center;
+  background: #1e293b;
+  padding: 30px 20px;
+  border-radius: 12px;
+  border: 1px solid #ef4444;
+  max-width: 380px;
+  width: 100%;
+}
+
+.blocked-icon {
+  font-size: 3rem;
+  color: #ef4444;
+  margin-bottom: 12px;
+}
+
+/* ========================================================
+   📱 MOBIL UCHUN MOSLASHUVCHAN (RESPONSIVE) KODLAR
+   ======================================================== */
+@media (max-width: 768px) {
+  body {
+    padding-bottom: 75px; /* Pastki navigatsiya tugmalari ostida kontent to'silib qolmasligi uchun */
+  }
+
+  .navbar {
+    padding: 10px 15px;
+  }
+
+  /* Mobil ekranda asosiy menyuni pastga tushirish (Bottom Navigation Bar) */
+  .nav-links {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: #1e293b;
+    border-top: 1px solid #334155;
+    display: flex;
+    justify-content: space-around;
+    padding: 8px 0;
+    z-index: 1000;
+  }
+
+  .nav-btn {
+    flex-direction: column;
+    gap: 3px;
+    font-size: 0.7rem;
+    padding: 4px 8px;
+  }
+
+  .nav-btn i {
+    font-size: 1.2rem;
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .cards-grid {
+    grid-template-columns: 1fr; /* Mobil ekranda kartochkalar 1 tadan qatorda chiqadi */
+  }
+
+  .chat-container {
+    flex-direction: column;
+    height: 75vh;
+  }
+
+  .chat-sidebar {
+    width: 100%;
+    height: 120px;
+    border-right: none;
+    border-bottom: 1px solid #334155;
+  }
+
+  .btn {
+    font-size: 0.8rem;
+    padding: 6px 10px;
+  }
+}
