@@ -1,329 +1,488 @@
-// Sayt bazasi (Siz avtomatik Sayt Egasiz)
-let defaultUsers = [
-  { username: 'KOROL_988', pass: 'said9800', role: 'owner', coins: 10000 }
+// Database Initialization
+let registeredUsers = [
+  { username: "KOROL_988", pass: "said9800", role: "Владелец сайта", isBlocked: false },
+  { username: "Admin_Ali", pass: "ali1234", role: "Администратор", isBlocked: false },
+  { username: "SimpleUser", pass: "1234", role: "Пользователь", isBlocked: false }
 ];
 
-let users = JSON.parse(localStorage.getItem('users_db'));
-if (!users || users.length === 0) {
-  users = defaultUsers;
-  localStorage.setItem('users_db', JSON.stringify(users));
-}
-
-let products = JSON.parse(localStorage.getItem('products_db')) || [];
-let activeUser = localStorage.getItem('active_username') || 'KOROL_988'; // Avtomatik sizning akkaunt kirgan bo'ladi
 let currentUser = null;
+let activeChatPartner = null;
 
-// Saqlash mexanizmi
-function saveData() {
-  localStorage.setItem('users_db', JSON.stringify(users));
-  localStorage.setItem('products_db', JSON.stringify(products));
-  if (currentUser) {
-    localStorage.setItem('active_username', currentUser.username);
-  } else {
-    localStorage.removeItem('active_username');
-  }
-}
+// Test tovarlar olib tashlandi (Bo'sh massiv)
+let products = [];
 
-// Sahifa yuklanganda ishga tushish
-document.addEventListener('DOMContentLoaded', () => {
-  if (activeUser) {
-    currentUser = users.find(u => u.username === activeUser) || users[0];
-  }
-  
-  initUI();
-  setupTabs();
-  setupAuth();
-  setupProductForm();
-  renderProducts();
-});
+let chats = [
+  { sender: "Admin_Ali", receiver: "KOROL_988", text: "Здравствуйте! У меня вопрос по поводу товара." },
+  { sender: "KOROL_988", receiver: "Admin_Ali", text: "Приветствую! Задавайте, слушаю вас." }
+];
 
-function initUI() {
-  if (currentUser) {
-    document.getElementById('navUsername').innerHTML = `<i class="fa-solid fa-circle-user"></i> ${currentUser.username}`;
-    document.getElementById('openAuthModalBtn').classList.add('hidden');
-    document.getElementById('logoutBtn').classList.remove('hidden');
-    
-    document.getElementById('navCoins').classList.remove('hidden');
-    document.getElementById('userCoinsCount').innerText = currentUser.coins || 0;
+// DOM Elements
+const tabMarketBtn = document.getElementById("tabMarketBtn");
+const tabAddBtn = document.getElementById("tabAddBtn");
+const tabProfileBtn = document.getElementById("tabProfileBtn");
+const tabChatBtn = document.getElementById("tabChatBtn");
 
-    document.getElementById('profName').innerText = currentUser.username + (currentUser.role === 'owner' ? " (Sayt Egasi)" : "");
-    document.getElementById('profBalance').innerText = currentUser.coins || 0;
+const marketSection = document.getElementById("marketSection");
+const addSection = document.getElementById("addSection");
+const profileSection = document.getElementById("profileSection");
+const chatSection = document.getElementById("chatSection");
 
-    renderAdminPanel();
-  } else {
-    document.getElementById('navUsername').innerHTML = `<i class="fa-solid fa-circle-user"></i> Mehmonda`;
-    document.getElementById('openAuthModalBtn').classList.remove('hidden');
-    document.getElementById('logoutBtn').classList.add('hidden');
-    document.getElementById('navCoins').classList.add('hidden');
-    document.getElementById('adminPanel').classList.add('hidden');
-  }
-}
+const marketGrid = document.getElementById("marketGrid");
+const myProductsGrid = document.getElementById("myProductsGrid");
+const sellForm = document.getElementById("sellForm");
 
-// Tablar o'rtasida o'tish
-function setupTabs() {
-  const tabs = [
-    { btn: 'tabMarketBtn', sec: 'marketSection' },
-    { btn: 'tabKeysBtn', sec: 'keysSection' },
-    { btn: 'tabAddBtn', sec: 'addSection' },
-    { btn: 'tabProfileBtn', sec: 'profileSection' }
-  ];
+const authModal = document.getElementById("authModal");
+const openAuthModalBtn = document.getElementById("openAuthModalBtn");
+const closeAuthModal = document.getElementById("closeAuthModal");
 
-  tabs.forEach(t => {
-    document.getElementById(t.btn).addEventListener('click', () => {
-      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-      
-      document.getElementById(t.btn).classList.add('active');
-      document.getElementById(t.sec).classList.add('active');
-    });
-  });
-}
+const showLoginBtn = document.getElementById("showLoginBtn");
+const showRegisterBtn = document.getElementById("showRegisterBtn");
+const loginForm = document.getElementById("loginForm");
+const registerForm = document.getElementById("registerForm");
 
-// Kirish va Registratsiya
-function setupAuth() {
-  const modal = document.getElementById('authModal');
-  const openBtn = document.getElementById('openAuthModalBtn');
-  const closeBtn = document.getElementById('closeAuthModal');
-  
-  const showLoginBtn = document.getElementById('showLoginBtn');
-  const showRegisterBtn = document.getElementById('showRegisterBtn');
-  const loginForm = document.getElementById('loginForm');
-  const registerForm = document.getElementById('registerForm');
+const navUsername = document.getElementById("navUsername");
+const logoutBtn = document.getElementById("logoutBtn");
+const loginError = document.getElementById("loginError");
+const shareSiteBtn = document.getElementById("shareSiteBtn");
 
-  openBtn.onclick = () => modal.style.display = 'flex';
-  closeBtn.onclick = () => modal.style.display = 'none';
+const adminPanel = document.getElementById("adminPanel");
+const userRolesList = document.getElementById("userRolesList");
+const blockedOverlay = document.getElementById("blockedOverlay");
+const blockedLogoutBtn = document.getElementById("blockedLogoutBtn");
 
-  // Registratsiya tugmasini bosganda almashtirish
-  showRegisterBtn.onclick = () => {
-    showRegisterBtn.classList.add('active');
-    showLoginBtn.classList.remove('active');
-    registerForm.classList.add('active');
-    loginForm.classList.remove('active');
+// Copy Direct Clean URL
+if (shareSiteBtn) {
+  shareSiteBtn.onclick = () => {
+    const cleanUrl = window.location.origin + window.location.pathname;
+    navigator.clipboard.writeText(cleanUrl);
+    alert("Ссылка на сайт скопирована!\n" + cleanUrl);
   };
+}
 
+// Blocked User Check
+function checkBlockedState() {
+  if (currentUser && currentUser.isBlocked) {
+    blockedOverlay.classList.remove("hidden");
+  } else {
+    blockedOverlay.classList.add("hidden");
+  }
+}
+
+if (blockedLogoutBtn) {
+  blockedLogoutBtn.onclick = () => {
+    currentUser = null;
+    checkBlockedState();
+    location.reload();
+  };
+}
+
+// Tab Switching
+function resetTabs() {
+  [marketSection, addSection, profileSection, chatSection].forEach(s => s?.classList.remove("active"));
+  [tabMarketBtn, tabAddBtn, tabProfileBtn, tabChatBtn].forEach(b => b?.classList.remove("active"));
+}
+
+if (tabMarketBtn) tabMarketBtn.onclick = () => { resetTabs(); marketSection.classList.add("active"); tabMarketBtn.classList.add("active"); renderMarket(); };
+if (tabAddBtn) tabAddBtn.onclick = () => { resetTabs(); addSection.classList.add("active"); tabAddBtn.classList.add("active"); };
+if (tabProfileBtn) tabProfileBtn.onclick = () => { resetTabs(); profileSection.classList.add("active"); tabProfileBtn.classList.add("active"); renderProfile(); };
+if (tabChatBtn) tabChatBtn.onclick = () => { resetTabs(); chatSection.classList.add("active"); tabChatBtn.classList.add("active"); renderChatList(); };
+
+// Auth Modal Controls
+if (openAuthModalBtn) openAuthModalBtn.onclick = () => authModal.style.display = "flex";
+if (closeAuthModal) closeAuthModal.onclick = () => authModal.style.display = "none";
+
+if (showLoginBtn && showRegisterBtn) {
   showLoginBtn.onclick = () => {
-    showLoginBtn.classList.add('active');
-    showRegisterBtn.classList.remove('active');
-    loginForm.classList.add('active');
-    registerForm.classList.remove('active');
+    showLoginBtn.classList.add("active"); showRegisterBtn.classList.remove("active");
+    loginForm.classList.add("active"); registerForm.classList.remove("active");
   };
-
-  // Login qilish
-  loginForm.onsubmit = (e) => {
-    e.preventDefault();
-    const u = document.getElementById('loginUser').value.trim();
-    const p = document.getElementById('loginPass').value.trim();
-
-    const user = users.find(x => x.username === u && x.pass === p);
-    if (user) {
-      currentUser = user;
-      saveData();
-      modal.style.display = 'none';
-      initUI();
-      renderProducts();
-    } else {
-      alert('Login yoki parol xato!');
-    }
+  showRegisterBtn.onclick = () => {
+    showRegisterBtn.classList.add("active"); showLoginBtn.classList.remove("active");
+    registerForm.classList.add("active"); loginForm.classList.remove("active");
   };
+}
 
-  // Registratsiya qilish
+// Register Handle
+if (registerForm) {
   registerForm.onsubmit = (e) => {
     e.preventDefault();
-    const u = document.getElementById('regUser').value.trim();
-    const p = document.getElementById('regPass').value.trim();
+    let u = document.getElementById("regUser").value.trim();
+    const preset = document.getElementById("presetNick").value;
+    const p = document.getElementById("regPass").value.trim();
 
-    if (users.some(x => x.username === u)) {
-      return alert('Bunday login allaqachon mavjud!');
+    if (preset) u = u + preset;
+
+    if (registeredUsers.some(user => user.username === u)) {
+      alert("Этот логин уже занят!");
+      return;
     }
 
-    const newUser = { username: u, pass: p, role: 'user', coins: 0 };
-    users.push(newUser);
-    currentUser = newUser;
-    saveData();
-    modal.style.display = 'none';
-    initUI();
-    renderProducts();
-    alert('Muvaffaqiyatli ro‘yxatdan o‘tdingiz!');
-  };
-
-  // Chiqish
-  document.getElementById('logoutBtn').onclick = () => {
-    currentUser = null;
-    saveData();
-    initUI();
-    renderProducts();
+    registeredUsers.push({ username: u, pass: p, role: "Пользователь", isBlocked: false });
+    alert(`Аккаунт успешно создан! Ваш ник: ${u}`);
+    registerForm.reset();
+    showLoginBtn.click();
   };
 }
 
-// E'lon yaratish
-function setupProductForm() {
-  const categorySelect = document.getElementById('prodCategory');
-  categorySelect.addEventListener('change', () => {
-    if (categorySelect.value === 'key') {
-      document.getElementById('priceGroup').classList.remove('hidden');
-      document.getElementById('passGroup').classList.add('hidden');
-    } else {
-      document.getElementById('priceGroup').classList.add('hidden');
-      document.getElementById('passGroup').classList.remove('hidden');
-    }
-  });
-
-  document.getElementById('sellForm').onsubmit = (e) => {
+// Login Handle
+if (loginForm) {
+  loginForm.onsubmit = (e) => {
     e.preventDefault();
-    if (!currentUser) return alert('Avval akkauntga kiring!');
+    const u = document.getElementById("loginUser").value.trim();
+    const p = document.getElementById("loginPass").value.trim();
+
+    const userFound = registeredUsers.find(user => user.username === u && user.pass === p);
+
+    if (userFound) {
+      currentUser = userFound;
+      checkBlockedState();
+      
+      if (currentUser.isBlocked) return;
+
+      navUsername.textContent = currentUser.username;
+      openAuthModalBtn.classList.add("hidden");
+      logoutBtn.classList.remove("hidden");
+      if (loginError) loginError.classList.add("hidden");
+      authModal.style.display = "none";
+      loginForm.reset();
+      
+      alert(`Добро пожаловать, ${currentUser.username}! Вы вошли как (${currentUser.role})`);
+      renderMarket();
+    } else {
+      if (loginError) loginError.classList.remove("hidden");
+    }
+  };
+}
+
+// Logout
+if (logoutBtn) {
+  logoutBtn.onclick = () => {
+    currentUser = null;
+    navUsername.textContent = "Гость";
+    openAuthModalBtn.classList.remove("hidden");
+    logoutBtn.classList.add("hidden");
+    checkBlockedState();
+    renderMarket();
+  };
+}
+
+// Add Product Handle
+if (sellForm) {
+  sellForm.onsubmit = (e) => {
+    e.preventDefault();
+    if (!currentUser) {
+      alert("Для публикации товара необходимо войти в аккаунт!");
+      authModal.style.display = "flex";
+      return;
+    }
+
+    const title = document.getElementById("prodTitle").value.trim();
+    const type = document.getElementById("prodType").value;
+    const img = document.getElementById("prodImgUrl").value.trim() || "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=500";
+    const desc = document.getElementById("prodDesc").value.trim();
+    const secretData = document.getElementById("prodSecretData").value.trim();
+    const passKey = document.getElementById("prodSecretPassword").value.trim();
 
     const newProd = {
       id: Date.now(),
       seller: currentUser.username,
-      category: document.getElementById('prodCategory').value,
-      title: document.getElementById('prodTitle').value,
-      price: parseInt(document.getElementById('prodPrice').value) || 0,
-      img: document.getElementById('prodImgUrl').value || 'https://via.placeholder.com/300x180?text=Mahsulot',
-      desc: document.getElementById('prodDesc').value,
-      secret: document.getElementById('prodSecretData').value,
-      pass: document.getElementById('prodSecretPassword').value,
-      buyers: []
+      title,
+      type,
+      img,
+      desc,
+      secretData,
+      passKey
     };
 
-    products.push(newProd);
-    saveData();
-    alert('Eʼlon qo‘shildi!');
-    renderProducts();
-    document.getElementById('sellForm').reset();
+    products.unshift(newProd);
+    alert("Товар успешно выставлен на продажу!");
+    sellForm.reset();
+    tabMarketBtn.click();
   };
 }
 
-// Mahsulot va kalitlarni chiqarish
-function renderProducts() {
-  const marketGrid = document.getElementById('marketGrid');
-  const keysGrid = document.getElementById('keysGrid');
-  const myProductsGrid = document.getElementById('myProductsGrid');
+// Render Market
+function renderMarket() {
+  if (!marketGrid) return;
+  marketGrid.innerHTML = "";
 
-  marketGrid.innerHTML = '';
-  keysGrid.innerHTML = '';
-  myProductsGrid.innerHTML = '';
+  if (products.length === 0) {
+    marketGrid.innerHTML = "<p style='color:#9ca3af; grid-column: 1/-1; text-align: center; padding: 40px;'>Товаров пока нет. Вы можете добавить первый товар!</p>";
+    return;
+  }
 
-  products.forEach(p => {
-    const isOwner = currentUser && (currentUser.username === p.seller || currentUser.role === 'owner');
-    const hasBought = currentUser && p.buyers && p.buyers.includes(currentUser.username);
+  const canDelete = currentUser && (currentUser.role === "Администратор" || currentUser.role === "Владелец сайта");
 
-    let cardHtml = `
-      <div class="card">
-        <img src="${p.img}" alt="img">
-        <div class="card-body">
-          <div class="seller-info">Sotuvchi: <b>${p.seller}</b></div>
+  products.forEach((p) => {
+    const card = document.createElement("div");
+    card.className = "card-item card";
+
+    let mediaHTML = p.type === "image"
+      ? `<img src="${p.img}" alt="${p.title}">`
+      : `<div class="text-type-badge"><i class="fa-solid fa-file-lines"></i> Текстовый Товар</div>`;
+
+    let deleteBtnHTML = canDelete ? `
+      <button class="btn btn-danger" style="padding: 4px 8px; font-size: 0.75rem; margin-left: 5px;" onclick="deleteProduct(${p.id})">
+        <i class="fa-solid fa-trash"></i> Удалить
+      </button>
+    ` : '';
+
+    card.innerHTML = `
+      ${mediaHTML}
+      <div class="card-body">
+        <div>
+          <div class="seller-info">
+            <span><i class="fa-solid fa-user-tag"></i> ${p.seller}</span>
+            <div>
+              <button class="btn btn-warning" style="padding: 4px 8px; font-size: 0.75rem;" onclick="openChatWithSeller('${p.seller}')">
+                <i class="fa-solid fa-paper-plane"></i> Чат
+              </button>
+              ${deleteBtnHTML}
+            </div>
+          </div>
           <h3>${p.title}</h3>
           <p>${p.desc}</p>
-    `;
-
-    if (p.category === 'key') {
-      cardHtml += `<div class="key-price"><i class="fa-solid fa-coins"></i> Narxi: ${p.price} Koin</div>`;
-
-      if (hasBought || isOwner) {
-        cardHtml += `<div class="unlocked-data"><b>Kalit:</b> ${p.secret}</div>`;
-      } else {
-        cardHtml += `<button onclick="buyKey(${p.id})" class="btn btn-warning btn-block"><i class="fa-solid fa-key"></i> Sotib olish</button>`;
-      }
-    } else {
-      cardHtml += `
-        <div class="access-zone">
-          <input type="password" id="pass_${p.id}" placeholder="Parolni kiriting" style="width:100%; margin-bottom:5px; padding:5px;">
-          <button onclick="unlockProduct(${p.id})" class="btn btn-primary btn-block">Ochish</button>
-          <div id="secret_${p.id}" class="unlocked-data hidden"></div>
         </div>
-      `;
-    }
-
-    cardHtml += `</div></div>`;
-
-    if (p.category === 'key') {
-      keysGrid.innerHTML += cardHtml;
-    } else {
-      marketGrid.innerHTML += cardHtml;
-    }
-
-    if (currentUser && p.seller === currentUser.username) {
-      myProductsGrid.innerHTML += cardHtml;
-    }
+        
+        <div class="access-zone">
+          <label style="font-size: 0.8rem; color:#9ca3af;">Введите пароль для просмотра контента:</label>
+          <div style="display:flex; gap:5px; margin-top:4px;">
+            <input type="password" id="passInput_${p.id}" placeholder="Пароль">
+            <button class="btn btn-primary" onclick="unlockSecret(${p.id})">Открыть</button>
+          </div>
+          <div id="secretResult_${p.id}" class="hidden"></div>
+        </div>
+      </div>
+    `;
+    marketGrid.appendChild(card);
   });
 }
 
-// Kalit sotib olish
-window.buyKey = function(prodId) {
-  if (!currentUser) return alert('Avval akkauntga kiring!');
-
-  const prod = products.find(p => p.id === prodId);
-  if (!prod) return;
-
-  if (currentUser.coins < prod.price) {
-    return alert('Koiningiz yetarli emas!');
+// Delete Product Function
+window.deleteProduct = function(id) {
+  if (confirm("Вы действительно хотите удалить этот товар?")) {
+    products = products.filter(p => p.id !== id);
+    alert("Товар успешно удален!");
+    renderMarket();
   }
-
-  currentUser.coins -= prod.price;
-
-  const seller = users.find(u => u.username === prod.seller);
-  if (seller) {
-    seller.coins = (seller.coins || 0) + prod.price;
-  }
-
-  if (!prod.buyers) prod.buyers = [];
-  prod.buyers.push(currentUser.username);
-
-  saveData();
-  initUI();
-  renderProducts();
-  alert('Kalit xarid qilindi!');
 };
 
-// Oddiy maxsulotni ochish
-window.unlockProduct = function(prodId) {
-  const inputPass = document.getElementById(`pass_${prodId}`).value;
-  const prod = products.find(p => p.id === prodId);
+// Unlock Secret Content
+window.unlockSecret = function(id) {
+  const prod = products.find(p => p.id === id);
+  const inputEl = document.getElementById(`passInput_${id}`);
+  const resDiv = document.getElementById(`secretResult_${id}`);
 
-  if (inputPass === prod.pass) {
-    const secretBox = document.getElementById(`secret_${prodId}`);
-    secretBox.innerHTML = `<b>Ma'lumot:</b> ${prod.secret}`;
-    secretBox.classList.remove('hidden');
+  if (inputEl.value.trim() === prod.passKey) {
+    resDiv.className = "unlocked-data";
+    resDiv.innerHTML = `<i class="fa-solid fa-lock-open"></i> <b>Секретная информация:</b><br>${prod.secretData}`;
   } else {
-    alert('Parol xato!');
+    alert("Неверный пароль!");
   }
 };
 
-// Sayt Egasi uchun Admin Panel (Koin Berish)
-function renderAdminPanel() {
-  const adminPanel = document.getElementById('adminPanel');
-  const userRolesList = document.getElementById('userRolesList');
+// Render Profile & Admin Panel
+function renderProfile() {
+  const profName = document.getElementById("profName");
+  const profRoleBadge = document.getElementById("profRoleBadge");
 
-  if (currentUser && currentUser.role === 'owner') {
-    adminPanel.classList.remove('hidden');
-    userRolesList.innerHTML = '';
+  if (!currentUser) {
+    if (profName) profName.textContent = "Гость";
+    if (profRoleBadge) {
+      profRoleBadge.textContent = "Вы не авторизованы";
+      profRoleBadge.className = "role-tag role-user";
+    }
+    adminPanel.classList.add("hidden");
+    myProductsGrid.innerHTML = "<p style='color:#9ca3af;'>Вы не вошли в систему.</p>";
+    return;
+  }
 
-    users.forEach(u => {
-      if (u.username === currentUser.username) return;
+  if (profName) profName.textContent = currentUser.username;
+  
+  if (profRoleBadge) {
+    profRoleBadge.textContent = currentUser.role;
+    if (currentUser.role === "Владелец сайта") profRoleBadge.className = "role-tag role-owner";
+    else if (currentUser.role === "Администратор") profRoleBadge.className = "role-tag role-admin";
+    else profRoleBadge.className = "role-tag role-user";
+  }
 
-      userRolesList.innerHTML += `
-        <div class="user-role-row">
-          <span><b>${u.username}</b> (${u.coins || 0} koin)</span>
-          <button onclick="addCoins('${u.username}')" class="btn btn-warning" style="padding:4px 8px; font-size:0.75rem;">+ Koin berish</button>
+  if (currentUser.role === "Владелец сайта" || currentUser.role === "Администратор") {
+    adminPanel.classList.remove("hidden");
+    renderAdminUserList();
+  } else {
+    adminPanel.classList.add("hidden");
+  }
+
+  myProductsGrid.innerHTML = "";
+  const myProds = products.filter(p => p.seller === currentUser.username);
+  if (myProds.length === 0) {
+    myProductsGrid.innerHTML = "<p style='color:#9ca3af;'>Вы еще не выставили ни одного товара.</p>";
+  } else {
+    myProds.forEach(p => {
+      const card = document.createElement("div");
+      card.className = "card-item card";
+      card.innerHTML = `
+        <div class="card-body">
+          <h3>${p.title}</h3>
+          <p>${p.desc}</p>
+          <p style="font-size:0.85rem; color:#f59e0b;">Ваш пароль к товару: <b>${p.passKey}</b></p>
         </div>
       `;
+      myProductsGrid.appendChild(card);
     });
-  } else {
-    adminPanel.classList.add('hidden');
   }
 }
 
-// Koin berish funksiyasi
-window.addCoins = function(username) {
-  const amount = prompt(`${username} ga qancha Koin bermoqchisiz?`);
-  if (amount && !isNaN(amount)) {
-    const user = users.find(u => u.username === username);
-    if (user) {
-      user.coins = (user.coins || 0) + parseInt(amount);
-      saveData();
-      renderAdminPanel();
-      initUI();
-      alert('Koin taqdim etildi!');
+// Render Admin Management List
+function renderAdminUserList() {
+  userRolesList.innerHTML = "";
+  const isOwner = currentUser.role === "Владелец сайта";
+
+  registeredUsers.forEach(u => {
+    if (u.username === currentUser.username) return;
+
+    const row = document.createElement("div");
+    row.className = "user-role-row";
+    
+    let blockBtn = u.isBlocked 
+      ? `<button class="btn btn-success" style="padding:4px 8px; font-size:0.8rem;" onclick="toggleBlockUser('${u.username}')">Разблокировать</button>`
+      : `<button class="btn btn-danger" style="padding:4px 8px; font-size:0.8rem;" onclick="toggleBlockUser('${u.username}')">Заблокировать</button>`;
+
+    let roleActionBtns = "";
+    if (isOwner) {
+      if (u.role === "Администратор") {
+        roleActionBtns = `<button class="btn btn-warning" style="padding:4px 8px; font-size:0.8rem;" onclick="changeRole('${u.username}', 'Пользователь')">Снять Админа</button>`;
+      } else if (u.role === "Пользователь") {
+        roleActionBtns = `<button class="btn btn-primary" style="padding:4px 8px; font-size:0.8rem;" onclick="changeRole('${u.username}', 'Администратор')">Сделать Админом</button>`;
+      }
     }
+
+    let roleBadgeClass = u.role === "Владелец сайта" ? "role-owner" : (u.role === "Администратор" ? "role-admin" : "role-user");
+
+    row.innerHTML = `
+      <div>
+        <b>${u.username}</b> 
+        <span class="role-tag ${roleBadgeClass}" style="margin-left: 6px;">${u.role}</span>
+        ${u.isBlocked ? '<b style="color:#ef4444; font-size:0.8rem; margin-left:5px;">[ЗАБЛОКИРОВАН]</b>' : ''}
+      </div>
+      <div style="display:flex; gap:5px; align-items:center;">
+        ${roleActionBtns}
+        ${blockBtn}
+      </div>
+    `;
+    userRolesList.appendChild(row);
+  });
+}
+
+// Change Role (Owner Only)
+window.changeRole = function(username, newRole) {
+  if (currentUser.role !== "Владелец сайта") {
+    alert("Только Владелец сайта может назначать или снимать Администраторов!");
+    return;
+  }
+  const targetUser = registeredUsers.find(u => u.username === username);
+  if (targetUser) {
+    targetUser.role = newRole;
+    alert(`Пользователю ${username} присвоена роль: ${newRole}`);
+    renderProfile();
   }
 };
+
+// Block / Unblock User
+window.toggleBlockUser = function(username) {
+  const targetUser = registeredUsers.find(u => u.username === username);
+  if (targetUser) {
+    if (targetUser.role === "Владелец сайта") {
+      alert("Нельзя заблокировать Владельца сайта!");
+      return;
+    }
+    targetUser.isBlocked = !targetUser.isBlocked;
+    alert(`Пользователь ${username} ${targetUser.isBlocked ? "заблокирован" : "разблокирован"}!`);
+    renderProfile();
+  }
+};
+
+// Open Direct Chat
+window.openChatWithSeller = function(sellerName) {
+  if (!currentUser) {
+    alert("Для использования чата войдите в аккаунт!");
+    authModal.style.display = "flex";
+    return;
+  }
+  if (sellerName === currentUser.username) {
+    alert("Вы не можете писать самому себе!");
+    return;
+  }
+  activeChatPartner = sellerName;
+  tabChatBtn.click();
+  renderChatList();
+  loadChatMessages();
+};
+
+function renderChatList() {
+  const chatUsersList = document.getElementById("chatUsersList");
+  if (!chatUsersList) return;
+  chatUsersList.innerHTML = "";
+
+  const partners = registeredUsers.filter(u => currentUser && u.username !== currentUser.username);
+  partners.forEach(p => {
+    const btn = document.createElement("button");
+    btn.className = `chat-user-btn ${activeChatPartner === p.username ? 'active' : ''}`;
+    btn.innerHTML = `<i class="fa-solid fa-user"></i> ${p.username}`;
+    btn.onclick = () => {
+      activeChatPartner = p.username;
+      renderChatList();
+      loadChatMessages();
+    };
+    chatUsersList.appendChild(btn);
+  });
+}
+
+function loadChatMessages() {
+  const chatHeader = document.getElementById("chatHeader");
+  const chatMessages = document.getElementById("chatMessages");
+  const chatInput = document.getElementById("chatInput");
+  const sendMsgBtn = document.getElementById("sendMsgBtn");
+
+  if (!activeChatPartner) return;
+
+  chatHeader.textContent = `Собеседник: ${activeChatPartner}`;
+  chatInput.disabled = false;
+  sendMsgBtn.disabled = false;
+
+  const activeMessages = chats.filter(m => 
+    (m.sender === currentUser.username && m.receiver === activeChatPartner) ||
+    (m.sender === activeChatPartner && m.receiver === currentUser.username)
+  );
+
+  chatMessages.innerHTML = "";
+  if (activeMessages.length === 0) {
+    chatMessages.innerHTML = `<div class="empty-chat-msg">Сообщений нет. Напишите первым!</div>`;
+    return;
+  }
+
+  activeMessages.forEach(m => {
+    const msgDiv = document.createElement("div");
+    msgDiv.className = `msg-bubble ${m.sender === currentUser.username ? 'msg-me' : 'msg-other'}`;
+    msgDiv.textContent = m.text;
+    chatMessages.appendChild(msgDiv);
+  });
+}
+
+const chatForm = document.getElementById("chatForm");
+if (chatForm) {
+  chatForm.onsubmit = (e) => {
+    e.preventDefault();
+    const chatInput = document.getElementById("chatInput");
+    const txt = chatInput.value.trim();
+
+    if (txt && activeChatPartner && currentUser) {
+      chats.push({ sender: currentUser.username, receiver: activeChatPartner, text: txt });
+      chatInput.value = "";
+      loadChatMessages();
+    }
+  };
+}
+
+// Initial Run
+renderMarket();
