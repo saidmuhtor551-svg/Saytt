@@ -1,15 +1,16 @@
-// Database Initialization - LocalStorage or Default Data
+// ==========================================
+// 1. BAZA VA MA'LUMOTLARNI YUKLASH
+// ==========================================
 let registeredUsers = JSON.parse(localStorage.getItem('mp_users')) || [
   { username: "KOROL_988", pass: "said9800", role: "Владелец сайта", isBlocked: false },
   { username: "Admin_Ali", pass: "ali1234", role: "Администратор", isBlocked: false },
   { username: "SimpleUser", pass: "1234", role: "Пользователь", isBlocked: false }
 ];
 
-// Active User Persistence
 let currentUser = JSON.parse(localStorage.getItem('mp_current_user')) || null;
 let activeChatPartner = null;
 
-// Load Global Products and Chats (Shared Across All Users)
+// Mahsulotlar ro'yxati (Barcha foydalanuvchilar uchun umumiy)
 let products = JSON.parse(localStorage.getItem('mp_products')) || [
   {
     id: 1,
@@ -25,7 +26,7 @@ let products = JSON.parse(localStorage.getItem('mp_products')) || [
 
 let chats = JSON.parse(localStorage.getItem('mp_chats')) || [];
 
-// Save State Function
+// Ma'lumotlarni xotirada saqlash funksiyasi
 function saveData() {
   localStorage.setItem('mp_users', JSON.stringify(registeredUsers));
   localStorage.setItem('mp_products', JSON.stringify(products));
@@ -38,7 +39,9 @@ function saveData() {
   }
 }
 
-// DOM Elements
+// ==========================================
+// 2. DOM ELEMENTLARINI BOG'LASH
+// ==========================================
 const tabMarketBtn = document.getElementById("tabMarketBtn");
 const tabAddBtn = document.getElementById("tabAddBtn");
 const tabProfileBtn = document.getElementById("tabProfileBtn");
@@ -72,7 +75,7 @@ const userRolesList = document.getElementById("userRolesList");
 const blockedOverlay = document.getElementById("blockedOverlay");
 const blockedLogoutBtn = document.getElementById("blockedLogoutBtn");
 
-// Copy Direct URL
+// Havolani nusxalash
 if (shareSiteBtn) {
   shareSiteBtn.onclick = () => {
     const cleanUrl = window.location.origin + window.location.pathname;
@@ -81,7 +84,7 @@ if (shareSiteBtn) {
   };
 }
 
-// Check Blocked State
+// Bloklanganlik holatini tekshirish
 function checkBlockedState() {
   if (currentUser && currentUser.isBlocked) {
     blockedOverlay?.classList.remove("hidden");
@@ -99,7 +102,9 @@ if (blockedLogoutBtn) {
   };
 }
 
-// Navigation / Tabs
+// ==========================================
+// 3. NAVIGATSIYA VA TACHLAR (TABS)
+// ==========================================
 function resetTabs() {
   [marketSection, addSection, profileSection, chatSection].forEach(s => s?.classList.remove("active"));
   [tabMarketBtn, tabAddBtn, tabProfileBtn, tabChatBtn].forEach(b => b?.classList.remove("active"));
@@ -131,7 +136,9 @@ if (tabAddBtn) tabAddBtn.onclick = () => switchTab('add');
 if (tabProfileBtn) tabProfileBtn.onclick = () => switchTab('profile');
 if (tabChatBtn) tabChatBtn.onclick = () => switchTab('chat');
 
-// Auth Modals
+// ==========================================
+// 4. AUTENTIFIKATSIYA (KIRISH VA RO'YXATDAN O'TISH)
+// ==========================================
 if (openAuthModalBtn) openAuthModalBtn.onclick = () => authModal.style.display = "flex";
 if (closeAuthModal) closeAuthModal.onclick = () => authModal.style.display = "none";
 
@@ -146,12 +153,12 @@ if (showLoginBtn && showRegisterBtn) {
   };
 }
 
-// Registration
+// Ro'yxatdan o'tish
 if (registerForm) {
   registerForm.onsubmit = (e) => {
     e.preventDefault();
     let u = document.getElementById("regUser").value.trim();
-    const preset = document.getElementById("presetNick").value;
+    const preset = document.getElementById("presetNick")?.value || "";
     const p = document.getElementById("regPass").value.trim();
 
     if (preset) u = u + preset;
@@ -165,13 +172,13 @@ if (registerForm) {
     registeredUsers.push(newUser);
     saveData();
 
-    alert(`Аккаунт создался! Ваш логин: ${u}`);
+    alert(`Аккаунт успешно создан! Ваш логин: ${u}`);
     registerForm.reset();
     showLoginBtn.click();
   };
 }
 
-// Login
+// Tizimga kirish
 if (loginForm) {
   loginForm.onsubmit = (e) => {
     e.preventDefault();
@@ -200,7 +207,7 @@ if (loginForm) {
   };
 }
 
-// Logout
+// Hisobdan chiqish
 if (logoutBtn) {
   logoutBtn.onclick = () => {
     currentUser = null;
@@ -212,7 +219,6 @@ if (logoutBtn) {
   };
 }
 
-// Update Top Bar User Info
 function updateUserNavUI() {
   if (currentUser) {
     navUsername.innerHTML = `<i class="fa-solid fa-circle-user"></i> ${currentUser.username}`;
@@ -226,7 +232,9 @@ function updateUserNavUI() {
   }
 }
 
-// Add Product
+// ==========================================
+// 5. MAHSULOT QO'SHISH VA KO'RSATISH
+// ==========================================
 if (sellForm) {
   sellForm.onsubmit = (e) => {
     e.preventDefault();
@@ -262,12 +270,10 @@ if (sellForm) {
   };
 }
 
-// Render Market Products (Visible to EVERYONE)
 function renderMarket() {
   if (!marketGrid) return;
   marketGrid.innerHTML = "";
 
-  // Always sync with latest storage
   products = JSON.parse(localStorage.getItem('mp_products')) || [];
 
   if (products.length === 0) {
@@ -322,7 +328,6 @@ function renderMarket() {
   });
 }
 
-// Delete Product
 window.deleteProduct = function(id) {
   if (confirm("Вы действительно хотите удалить этот товар?")) {
     products = products.filter(p => p.id !== id);
@@ -332,13 +337,12 @@ window.deleteProduct = function(id) {
   }
 };
 
-// Unlock Secret
 window.unlockSecret = function(id) {
   const prod = products.find(p => p.id === id);
   const inputEl = document.getElementById(`passInput_${id}`);
   const resDiv = document.getElementById(`secretResult_${id}`);
 
-  if (inputEl && inputEl.value.trim() === prod.passKey) {
+  if (inputEl && prod && inputEl.value.trim() === prod.passKey) {
     resDiv.className = "unlocked-data";
     resDiv.innerHTML = `<i class="fa-solid fa-lock-open"></i> <b>Секретная информация:</b><br>${prod.secretData}`;
   } else {
@@ -346,7 +350,9 @@ window.unlockSecret = function(id) {
   }
 };
 
-// Render Profile & Admin Panel
+// ==========================================
+// 6. PROFIL VA ADMIN PANEL
+// ==========================================
 function renderProfile() {
   const profName = document.getElementById("profName");
   const profRoleBadge = document.getElementById("profRoleBadge");
@@ -371,7 +377,6 @@ function renderProfile() {
     else profRoleBadge.className = "role-tag role-user";
   }
 
-  // Show Admin Panel if Owner or Admin
   if (currentUser.role === "Владелец сайта" || currentUser.role === "Администратор") {
     if (adminPanel) adminPanel.classList.remove("hidden");
     renderAdminUserList();
@@ -379,7 +384,6 @@ function renderProfile() {
     if (adminPanel) adminPanel.classList.add("hidden");
   }
 
-  // My Products list
   if (myProductsGrid) {
     myProductsGrid.innerHTML = "";
     const myProds = products.filter(p => p.seller === currentUser.username);
@@ -402,7 +406,6 @@ function renderProfile() {
   }
 }
 
-// Render Admin User List (FIXED FOR NAMES SHOWING PROPERLY)
 function renderAdminUserList() {
   if (!userRolesList) return;
   userRolesList.innerHTML = "";
@@ -447,9 +450,8 @@ function renderAdminUserList() {
   });
 }
 
-// Change Role
 window.changeRole = function(username, newRole) {
-  if (currentUser.role !== "Владелец сайта") {
+  if (!currentUser || currentUser.role !== "Владелец сайта") {
     alert("Только Владелец сайта может назначать или снимать Администраторов!");
     return;
   }
@@ -462,7 +464,6 @@ window.changeRole = function(username, newRole) {
   }
 };
 
-// Block/Unblock
 window.toggleBlockUser = function(username) {
   const targetUser = registeredUsers.find(u => u.username === username);
   if (targetUser) {
@@ -477,7 +478,9 @@ window.toggleBlockUser = function(username) {
   }
 };
 
-// Chat Functions
+// ==========================================
+// 7. CHAT TIZIMI
+// ==========================================
 window.openChatWithSeller = function(sellerName) {
   if (!currentUser) {
     alert("Для общения с продавцом необходимо войти в аккаунт!");
@@ -566,7 +569,6 @@ function renderChatMessages() {
   }
 }
 
-// Send Message
 const chatForm = document.getElementById("chatForm");
 if (chatForm) {
   chatForm.onsubmit = (e) => {
@@ -588,9 +590,11 @@ if (chatForm) {
   };
 }
 
-// Initial Load Handler
+// ==========================================
+// 8. BOSHLANG'ICH ISHGA TUSHIRISH
+// ==========================================
 document.addEventListener("DOMContentLoaded", () => {
-  saveData(); // Sync database
+  saveData();
   updateUserNavUI();
   checkBlockedState();
 
