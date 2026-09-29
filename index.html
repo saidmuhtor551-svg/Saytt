@@ -3,188 +3,57 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Маркетплейс</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <title>Современная страница</title>
+  <!-- Подключение CSS -->
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <!-- Blocked Overlay -->
-  <div id="blockedOverlay" class="blocked-overlay hidden">
-    <div class="blocked-box">
-      <i class="fa-solid fa-lock blocked-icon"></i>
-      <h2>Ваш аккаунт заблокирован!</h2>
-      <p>Вы не можете пользоваться сайтом, так как администрация заблокировала ваш профиль.</p>
-      <button id="blockedLogoutBtn" class="btn btn-danger">Выйти из аккаунта</button>
+  <!-- Шапка сайта -->
+  <header class="header">
+    <div class="container header__container">
+      <a href="#" class="header__logo">Logo</a>
+      <nav class="header__nav nav">
+        <ul class="nav__list">
+          <li class="nav__item"><a href="#home" class="nav__link">Главная</a></li>
+          <li class="nav__item"><a href="#about" class="nav__link">О нас</a></li>
+          <li class="nav__item"><a href="#services" class="nav__link">Услуги</a></li>
+          <li class="nav__item"><a href="#contact" class="nav__link">Контакты</a></li>
+        </ul>
+      </nav>
     </div>
-  </div>
-
-  <!-- Navigation Bar -->
-  <header class="navbar">
-    <div class="logo">
-      <i class="fa-solid fa-fire"></i>
-      <span>Маркет</span>
-    </div>
-
-    <!-- User Zone -->
-    <div class="user-auth-zone">
-      <span id="navUsername" class="user-display"><i class="fa-solid fa-circle-user"></i> Гость</span>
-      <button id="openAuthModalBtn" class="btn btn-primary"><i class="fa-solid fa-right-to-bracket"></i> Войти</button>
-      <button id="logoutBtn" class="btn btn-danger hidden"><i class="fa-solid fa-right-from-bracket"></i></button>
-    </div>
-
-    <!-- Navigation Links -->
-    <nav class="nav-links">
-      <button id="tabMarketBtn" class="nav-btn active"><i class="fa-solid fa-store"></i> <span>Товары</span></button>
-      <button id="tabAddBtn" class="nav-btn"><i class="fa-solid fa-plus-circle"></i> <span>Продать</span></button>
-      <button id="tabChatBtn" class="nav-btn"><i class="fa-solid fa-comments"></i> <span>Чат</span></button>
-      <button id="tabProfileBtn" class="nav-btn"><i class="fa-solid fa-user"></i> <span>Профиль</span></button>
-    </nav>
   </header>
 
-  <!-- Main Container -->
-  <main class="container">
+  <!-- Основной контент -->
+  <main class="main">
     
-    <!-- Tab 1: Market Grid -->
-    <section id="marketSection" class="tab-content active">
-      <div class="section-header">
-        <h2><i class="fa-solid fa-fire"></i> Все Товары</h2>
-        <button id="shareSiteBtn" class="btn btn-secondary"><i class="fa-solid fa-share-nodes"></i> Поделиться сайтом</button>
-      </div>
-      <div id="marketGrid" class="cards-grid"></div>
-    </section>
-
-    <!-- Tab 2: Add Product -->
-    <section id="addSection" class="tab-content">
-      <div class="form-card">
-        <h2><i class="fa-solid fa-plus-circle"></i> Выставить товар</h2>
-        <form id="sellForm">
-          <div class="form-group">
-            <label>Название товара:</label>
-            <input type="text" id="prodTitle" placeholder="Например: VIP Аккаунт" required>
-          </div>
-          
-          <div class="form-group">
-            <label>Тип товара:</label>
-            <select id="prodType">
-              <option value="image">С картинкой</option>
-              <option value="text">Текстовый (Без картинки)</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label>Ссылка на картинку:</label>
-            <input type="url" id="prodImgUrl" placeholder="https://example.com/image.jpg">
-          </div>
-
-          <div class="form-group">
-            <label>Описание товара:</label>
-            <textarea id="prodDesc" rows="3" placeholder="Описание товара..." required></textarea>
-          </div>
-
-          <div class="form-group secret-group">
-            <label><i class="fa-solid fa-file-lines"></i> Данные товара (ссылки, логины, подробности):</label>
-            <textarea id="prodSecretData" rows="3" placeholder="Данные, которые откроются покупателю..." required></textarea>
-          </div>
-
-          <button type="submit" class="btn btn-primary btn-block" style="margin-top: 15px;"><i class="fa-solid fa-check"></i> Опубликовать</button>
-        </form>
+    <!-- Hero / Главная секция -->
+    <section class="hero">
+      <div class="container hero__container">
+        <h1 class="hero__title">Заголовок вашей страницы</h1>
+        <p class="hero__subtitle">Краткое описание или призыв к действию для пользователей.</p>
+        <button class="hero__btn" type="button">Начать</button>
       </div>
     </section>
 
-    <!-- Tab 3: Chat System -->
-    <section id="chatSection" class="tab-content">
-      <div class="chat-container">
-        <div class="chat-sidebar">
-          3>Чаты</h3>
-          <div id="chatUsersList"></div>
-        </div>
-        <div class="chat-main">
-          <div id="chatHeader" class="chat-header">Выберите собеседника</div>
-          <div id="chatMessages" class="chat-messages">
-            <div class="empty-chat-msg">Выберите чат из списка</div>
-          </div>
-          <form id="chatForm" class="chat-input-area">
-            <input type="text" id="chatInput" placeholder="Введите сообщение..." disabled required>
-            <button type="submit" id="sendMsgBtn" class="btn btn-primary" disabled><i class="fa-solid fa-paper-plane"></i></button>
-          </form>
-        </div>
-      </div>
-    </section>
-
-    <!-- Tab 4: Profile & Admin Panel -->
-    <section id="profileSection" class="tab-content">
-      <div class="profile-card">
-        <div class="profile-header">
-          <i class="fa-solid fa-user-gear profile-avatar"></i>
-          <div>
-            <h2 id="profName">Гость</h2>
-            <span id="profRoleBadge" class="role-tag role-user">Пользователь</span>
-          </div>
-        </div>
-
-        <!-- Admin Control Panel -->
-        <div id="adminPanel" class="admin-panel hidden">
-          <h3><i class="fa-solid fa-shield-halved"></i> Панель Администрации</h3>
-          <p>Управление пользователями:</p>
-          <div id="userRolesList" class="user-roles-list"></div>
-        </div>
-
-        <div class="my-products-section">
-          <h3>Ваши товары:</h3>
-          <div id="myProductsGrid" class="cards-grid"></div>
-        </div>
+    <!-- Секция с контентом -->
+    <section id="about" class="about">
+      <div class="container">
+        <h2 class="about__title">О нас</h2>
+        <p class="about__text">Здесь располагается основной текст или карточки с информацией.</p>
       </div>
     </section>
 
   </main>
 
-  <!-- Login/Register Modal -->
-  <div id="authModal" class="modal">
-    <div class="modal-content">
-      <span id="closeAuthModal" class="close-modal">&times;</span>
-      
-      <div class="modal-tabs">
-        <button id="showLoginBtn" class="modal-tab-btn active">Вход</button>
-        <button id="showRegisterBtn" class="modal-tab-btn">Регистрация</button>
-      </div>
-
-      <!-- Login Form -->
-      <form id="loginForm" class="auth-form active">
-        <div class="form-group">
-          <label>Логин:</label>
-          <input type="text" id="loginUser" required>
-        </div>
-        <div class="form-group">
-          <label>Пароль:</label>
-          <input type="password" id="loginPass" required>
-        </div>
-        <div id="loginError" class="error-msg hidden">Неверный логин или пароль!</div>
-        <button type="submit" class="btn btn-primary btn-block">Войти</button>
-      </form>
-
-      <!-- Register Form -->
-      <form id="registerForm" class="auth-form">
-        <div class="form-group">
-          <label>Логин:</label>
-          <div style="display:flex; gap:5px;">
-            <input type="text" id="regUser" placeholder="Ваш логин" required style="flex:1;">
-            <select id="presetNick" style="width:110px;">
-              <option value="">Без приставки</option>
-              <option value="_988">_988</option>
-              <option value="_OFFICIAL">_OFFICIAL</option>
-            </select>
-          </div>
-        </div>
-        <div class="form-group">
-          <label>Пароль:</label>
-          <input type="password" id="regPass" required>
-        </div>
-        <button type="submit" class="btn btn-primary btn-block">Зарегистрироваться</button>
-      </form>
+  <!-- Подвал сайта -->
+  <footer class="footer">
+    <div class="container footer__container">
+      <p class="footer__copy">&copy; 2026 Все права защищены.</p>
     </div>
-  </div>
+  </footer>
 
-  <script src="script.js"></script>
+  <!-- Подключение JS (если нужен) -->
+  <script src="main.js"></script>
 </body>
 </html>
