@@ -1,154 +1,192 @@
 <!DOCTYPE html>
-<html lang="uz">
+<html lang="ru">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Market & Kalitlar do'koni</title>
+  <title>Маркетплейс</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <!-- NAVBAR -->
-  <nav class="navbar">
-    <div class="logo">
-      <i class="fa-solid fa-store"></i> Market Platform
+  <!-- Blocked Overlay -->
+  <div id="blockedOverlay" class="blocked-overlay hidden">
+    <div class="blocked-box">
+      <i class="fa-solid fa-lock blocked-icon"></i>
+      <h2>Ваш аккаунт заблокирован!</h2>
+      <p>Вы не можете пользоваться сайтом, так как администрация заблокировала ваш профиль.</p>
+      <button id="blockedLogoutBtn" class="btn btn-danger">Выйти из аккаунта</button>
     </div>
-
-    <div class="user-auth-zone">
-      <div id="navCoins" class="coins-badge hidden">
-        <i class="fa-solid fa-coins"></i> <span id="userCoinsCount">0</span>
-      </div>
-      
-      <div id="navUsername" class="user-display">
-        <i class="fa-solid fa-circle-user"></i> Mehmonda
-      </div>
-
-      <button id="openAuthModalBtn" class="btn btn-primary">Kirish</button>
-      <button id="logoutBtn" class="btn btn-danger hidden">Chiqish</button>
-    </div>
-  </nav>
-
-  <!-- NAV TABS -->
-  <div class="nav-links">
-    <button id="tabMarketBtn" class="nav-btn active"><i class="fa-solid fa-shop"></i> Bozor</button>
-    <button id="tabKeysBtn" class="nav-btn"><i class="fa-solid fa-key"></i> Kalitlar</button>
-    <button id="tabAddBtn" class="nav-btn"><i class="fa-solid fa-plus-circle"></i> Qo'shish</button>
-    <button id="tabProfileBtn" class="nav-btn"><i class="fa-solid fa-user-gear"></i> Profil</button>
   </div>
 
-  <div class="container">
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <div class="logo">
+      <i class="fa-solid fa-fire"></i>
+      <span>Маркет</span>
+    </div>
 
-    <!-- 1. BOZOR BO'LIMI -->
+    <!-- User Zone (Headerda turadi) -->
+    <div class="user-auth-zone">
+      <span id="navUsername" class="user-display"><i class="fa-solid fa-circle-user"></i> Гость</span>
+      <button id="openAuthModalBtn" class="btn btn-primary"><i class="fa-solid fa-right-to-bracket"></i> Войти</button>
+      <button id="logoutBtn" class="btn btn-danger hidden"><i class="fa-solid fa-right-from-bracket"></i></button>
+    </div>
+
+    <!-- Navigation Links (Mobilda pastki menyuga aylanadi) -->
+    <nav class="nav-links">
+      <button id="tabMarketBtn" class="nav-btn active"><i class="fa-solid fa-store"></i> <span>Товары</span></button>
+      <button id="tabAddBtn" class="nav-btn"><i class="fa-solid fa-plus-circle"></i> <span>Продать</span></button>
+      <button id="tabChatBtn" class="nav-btn"><i class="fa-solid fa-comments"></i> <span>Чат</span></button>
+      <button id="tabProfileBtn" class="nav-btn"><i class="fa-solid fa-user"></i> <span>Профиль</span></button>
+    </nav>
+  </header>
+
+  <!-- Main Container -->
+  <main class="container">
+    
+    <!-- Tab 1: Market Grid -->
     <section id="marketSection" class="tab-content active">
-      <h2 class="section-header">Oddiy mahsulotlar</h2>
+      <div class="section-header">
+        <h2><i class="fa-solid fa-fire"></i> Все Товары</h2>
+        <button id="shareSiteBtn" class="btn btn-secondary"><i class="fa-solid fa-share-nodes"></i> Поделиться сайтом</button>
+      </div>
       <div id="marketGrid" class="cards-grid"></div>
     </section>
 
-    <!-- 2. KALITLAR BO'LIMI -->
-    <section id="keysSection" class="tab-content">
-      <h2 class="section-header">Koin evaziga kalitlar</h2>
-      <div id="keysGrid" class="cards-grid"></div>
-    </section>
-
-    <!-- 3. QO'SHISH BO'LIMI -->
+    <!-- Tab 2: Add Product -->
     <section id="addSection" class="tab-content">
       <div class="form-card">
-        <h2>Yangi e'lon qo'shish</h2>
+        <h2><i class="fa-solid fa-plus-circle"></i> Выставить товар</h2>
         <form id="sellForm">
           <div class="form-group">
-            <label>Kategoriya</label>
-            <select id="prodCategory">
-              <option value="key">Kalit (Koin bilan sotish)</option>
-              <option value="normal">Oddiy mahsulot (Parol bilan)</option>
+            <label>Название товара:</label>
+            <input type="text" id="prodTitle" placeholder="Например: VIP Аккаунт" required>
+          </div>
+          
+          <div class="form-group">
+            <label>Тип товара:</label>
+            <select id="prodType">
+              <option value="image">С картинкой</option>
+              <option value="text">Текстовый (Без картинки)</option>
             </select>
           </div>
+
           <div class="form-group">
-            <label>Nomi</label>
-            <input type="text" id="prodTitle" required placeholder="Masalan: Telegram Premium Kalit">
+            <label>Ссылка на картинку:</label>
+            <input type="url" id="prodImgUrl" placeholder="https://example.com/image.jpg">
           </div>
-          <div id="priceGroup" class="form-group">
-            <label>Narxi (Koinlarda)</label>
-            <input type="number" id="prodPrice" value="50" min="0">
-          </div>
+
           <div class="form-group">
-            <label>Rasm URL (ixtiyoriy)</label>
-            <input type="text" id="prodImgUrl" placeholder="https://...">
+            <label>Публичное описание:</label>
+            <textarea id="prodDesc" rows="3" placeholder="Описание, которое видят все..." required></textarea>
           </div>
-          <div class="form-group">
-            <label>Tavsif (Tushuntirish)</label>
-            <textarea id="prodDesc" rows="3" required></textarea>
-          </div>
+
           <div class="form-group secret-group">
-            <label>Sirlar (Kalit/Havola/Kodni yozing)</label>
-            <textarea id="prodSecretData" rows="2" required placeholder="Faqat sotib olgan kishi ko'radi"></textarea>
+            <label><i class="fa-solid fa-key"></i> Секретные данные (пароли, логины, ссылки):</label>
+            <textarea id="prodSecretData" rows="3" placeholder="Данные, которые откроются только по паролю..." required></textarea>
           </div>
-          <div id="passGroup" class="form-group hidden">
-            <label>Ochish paroli (Oddiy mahsulot uchun)</label>
-            <input type="text" id="prodSecretPassword" placeholder="Parol yozing">
+
+          <div class="form-group secret-group">
+            <label><i class="fa-solid fa-lock"></i> Пароль для покупателя:</label>
+            <input type="text" id="prodSecretPassword" placeholder="Придумайте пароль" required>
           </div>
-          <button type="submit" class="btn btn-primary btn-block">E'lonni joylash</button>
+
+          <button type="submit" class="btn btn-primary btn-block"><i class="fa-solid fa-check"></i> Опубликовать</button>
         </form>
       </div>
     </section>
 
-    <!-- 4. PROFIL VA ADMIN PANEL -->
-    <section id="profileSection" class="tab-content">
-      <div class="profile-card">
-        <h2>Foydalanuvchi Profili</h2>
-        <p>Login: <b id="profName">...</b></p>
-        <p>Hisobdagi Koinlar: <b id="profBalance">0</b></p>
-        <hr style="margin: 15px 0; border-color:#334155;">
-
-        <!-- SAYT EGASI ADMIN PANELI -->
-        <div id="adminPanel" class="admin-panel hidden">
-          <h3><i class="fa-solid fa-crown"></i> Sayt Egasi Paneli (Koin berish)</h3>
-          <div id="userRolesList"></div>
+    <!-- Tab 3: Chat System -->
+    <section id="chatSection" class="tab-content">
+      <div class="chat-container">
+        <div class="chat-sidebar">
+          <h3>Чатlar</h3>
+          <div id="chatUsersList"></div>
         </div>
-
-        <h3>Mening e'lonlarim</h3>
-        <div id="myProductsGrid" class="cards-grid" style="margin-top:10px;"></div>
+        <div class="chat-main">
+          <div id="chatHeader" class="chat-header">Выберите собеседника</div>
+          <div id="chatMessages" class="chat-messages">
+            <div class="empty-chat-msg">Выберите чат из списка</div>
+          </div>
+          <form id="chatForm" class="chat-input-area">
+            <input type="text" id="chatInput" placeholder="Введите сообщение..." disabled required>
+            <button type="submit" id="sendMsgBtn" class="btn btn-primary" disabled><i class="fa-solid fa-paper-plane"></i></button>
+          </form>
+        </div>
       </div>
     </section>
 
-  </div>
+    <!-- Tab 4: Profile & Admin Panel -->
+    <section id="profileSection" class="tab-content">
+      <div class="profile-card">
+        <div class="profile-header">
+          <i class="fa-solid fa-user-gear profile-avatar"></i>
+          <div>
+            <h2 id="profName">Гость</h2>
+            <span id="profRoleBadge" class="role-tag role-user">Пользователь</span>
+          </div>
+        </div>
 
-  <!-- AUTH MODAL (Kirish / Registratsiya) -->
+        <!-- Admin Control Panel -->
+        <div id="adminPanel" class="admin-panel hidden">
+          <h3><i class="fa-solid fa-shield-halved"></i> Панель Администрации</h3>
+          <p>Управление пользователями:</p>
+          <div id="userRolesList" class="user-roles-list"></div>
+        </div>
+
+        <div class="my-products-section">
+          <h3>Ваши товары:</h3>
+          <div id="myProductsGrid" class="cards-grid"></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Login/Register Modal -->
   <div id="authModal" class="modal">
     <div class="modal-content">
       <span id="closeAuthModal" class="close-modal">&times;</span>
       
       <div class="modal-tabs">
-        <button id="showLoginBtn" class="modal-tab-btn active">Kirish</button>
-        <button id="showRegisterBtn" class="modal-tab-btn">Ro'yxatdan o'tish</button>
+        <button id="showLoginBtn" class="modal-tab-btn active">Вход</button>
+        <button id="showRegisterBtn" class="modal-tab-btn">Регистрация</button>
       </div>
 
-      <!-- LOGIN FORM -->
+      <!-- Login Form -->
       <form id="loginForm" class="auth-form active">
         <div class="form-group">
-          <label>Login</label>
+          <label>Логин:</label>
           <input type="text" id="loginUser" required>
         </div>
         <div class="form-group">
-          <label>Parol</label>
+          <label>Пароль:</label>
           <input type="password" id="loginPass" required>
         </div>
-        <button type="submit" class="btn btn-primary btn-block">Kirish</button>
+        <div id="loginError" class="error-msg hidden">Неверный логин или пароль!</div>
+        <button type="submit" class="btn btn-primary btn-block">Войти</button>
       </form>
 
-      <!-- REGISTER FORM -->
+      <!-- Register Form -->
       <form id="registerForm" class="auth-form">
         <div class="form-group">
-          <label>Yangi Login</label>
-          <input type="text" id="regUser" required>
+          <label>Логин:</label>
+          <div style="display:flex; gap:5px;">
+            <input type="text" id="regUser" placeholder="Ваш логин" required style="flex:1;">
+            <select id="presetNick" style="width:110px;">
+              <option value="">Без приставки</option>
+              <option value="_988">_988</option>
+              <option value="_OFFICIAL">_OFFICIAL</option>
+            </select>
+          </div>
         </div>
         <div class="form-group">
-          <label>Yangi Parol</label>
+          <label>Пароль:</label>
           <input type="password" id="regPass" required>
         </div>
-        <button type="submit" class="btn btn-warning btn-block">Ro'yxatdan o'tish</button>
+        <button type="submit" class="btn btn-primary btn-block">Зарегистрироваться</button>
       </form>
-
     </div>
   </div>
 
