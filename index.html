@@ -1,154 +1,445 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="uz">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Маркетплейс</title>
+  <title>Marketplace</title>
+  <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="style.css">
+  <style>
+    /* General Reset & Variables */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    :root {
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --card-border: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --danger: #ef4444;
+      --danger-hover: #dc2626;
+      --warning: #f59e0b;
+      --warning-hover: #d97706;
+      --secondary: #64748b;
+      --secondary-hover: #475569;
+      --success: #10b981;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .hidden { display: none !important; }
+
+    .btn {
+      border: none;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      color: #fff;
+    }
+
+    .btn-primary { background-color: var(--primary); }
+    .btn-primary:hover { background-color: var(--primary-hover); }
+    .btn-danger { background-color: var(--danger); }
+    .btn-danger:hover { background-color: var(--danger-hover); }
+    .btn-warning { background-color: var(--warning); color: #000; }
+    .btn-warning:hover { background-color: var(--warning-hover); color: #fff; }
+    .btn-secondary { background-color: var(--secondary); }
+    .btn-success { background-color: var(--success); }
+    .btn-block { width: 100%; padding: 12px; }
+
+    /* Navbar */
+    .navbar {
+      background-color: var(--card-bg);
+      border-bottom: 1px solid var(--card-border);
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #f97316;
+    }
+
+    .user-auth-zone {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .user-display {
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+      justify-content: center;
+      margin-top: 8px;
+    }
+
+    .nav-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .nav-btn:hover {
+      background-color: rgba(255, 255, 255, 0.05);
+      color: var(--text-main);
+    }
+
+    .nav-btn.active {
+      background-color: var(--primary);
+      color: #fff;
+    }
+
+    /* Container */
+    .container {
+      max-width: 1200px;
+      margin: 24px auto;
+      padding: 0 16px;
+      width: 100%;
+      flex: 1;
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .card-item {
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-item img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+    }
+
+    .text-type-badge {
+      height: 180px;
+      background-color: #0284c7;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      font-weight: 700;
+      gap: 8px;
+    }
+
+    .card-body {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      flex: 1;
+      gap: 12px;
+    }
+
+    .seller-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .access-zone {
+      background-color: rgba(0, 0, 0, 0.2);
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px dashed var(--card-border);
+    }
+
+    .access-zone input {
+      width: 100%;
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--card-border);
+      background-color: var(--bg-color);
+      color: #fff;
+    }
+
+    .unlocked-data {
+      margin-top: 8px;
+      padding: 8px;
+      background-color: rgba(16, 185, 129, 0.1);
+      border: 1px solid var(--success);
+      border-radius: 6px;
+      color: var(--success);
+      font-size: 0.9rem;
+      word-break: break-word;
+    }
+
+    /* Forms */
+    .form-card {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      padding: 24px;
+      border-radius: 12px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label { font-size: 0.9rem; color: var(--text-muted); }
+    .form-group input, .form-group select, .form-group textarea {
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--card-border);
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      outline: none;
+    }
+
+    /* Chat Layout */
+    .chat-container {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      height: 550px;
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .chat-sidebar {
+      border-right: 1px solid var(--card-border);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow-y: auto;
+    }
+
+    .chat-user-btn {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--text-main);
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .chat-user-btn:hover { background-color: rgba(255, 255, 255, 0.05); }
+    .chat-user-btn.active { background-color: var(--primary); }
+
+    .chat-main { display: flex; flex-direction: column; }
+    .chat-header { padding: 12px; border-bottom: 1px solid var(--card-border); font-weight: 700; background-color: rgba(0, 0, 0, 0.1); }
+    .chat-messages { flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+    .empty-chat-msg { text-align: center; color: var(--text-muted); margin-top: 40px; }
+    .msg-bubble { max-width: 70%; padding: 8px 12px; border-radius: 12px; font-size: 0.95rem; word-break: break-word; }
+    .msg-me { align-self: flex-end; background-color: var(--primary); color: #fff; }
+    .msg-other { align-self: flex-start; background-color: var(--card-border); color: var(--text-main); }
+    .chat-input-area { padding: 12px; border-top: 1px solid var(--card-border); display: flex; gap: 8px; }
+    .chat-input-area input { flex: 1; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--card-border); background-color: var(--bg-color); color: #fff; }
+
+    /* Profile & Admin */
+    .profile-card { background-color: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 24px; }
+    .role-tag { padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+    .role-owner { background-color: #8b5cf6; color: #fff; }
+    .role-admin { background-color: #ef4444; color: #fff; }
+    .role-user { background-color: #3b82f6; color: #fff; }
+
+    .admin-panel { margin: 20px 0; padding: 16px; background-color: rgba(0, 0, 0, 0.2); border-radius: 8px; border: 1px solid var(--card-border); }
+    .user-roles-list { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+    .user-role-row { display: flex; justify-content: space-between; align-items: center; padding: 8px; background-color: var(--card-bg); border-radius: 6px; }
+
+    /* Modal */
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); z-index: 200; align-items: center; justify-content: center; }
+    .modal-content { background-color: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; width: 100%; max-width: 400px; padding: 24px; position: relative; }
+    .close-modal { position: absolute; top: 12px; right: 16px; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); }
+    .modal-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+    .modal-tab-btn { flex: 1; padding: 8px; background: transparent; border: none; color: var(--text-muted); border-bottom: 2px solid transparent; cursor: pointer; font-weight: 600; }
+    .modal-tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+    .auth-form { display: none; }
+    .auth-form.active { display: block; }
+
+    @media (max-width: 640px) {
+      .chat-container { grid-template-columns: 1fr; height: 450px; }
+      .chat-sidebar { height: 120px; border-right: none; border-bottom: 1px solid var(--card-border); }
+    }
+  </style>
 </head>
 <body>
 
-  <!-- Blocked Overlay -->
-  <div id="blockedOverlay" class="blocked-overlay hidden">
-    <div class="blocked-box">
-      <i class="fa-solid fa-lock blocked-icon"></i>
-      <h2>Ваш аккаунт заблокирован!</h2>
-      <p>Вы не можете пользоваться сайтом, так как администрация заблокировала ваш профиль.</p>
-      <button id="blockedLogoutBtn" class="btn btn-danger">Выйти из аккаунта</button>
-    </div>
-  </div>
-
-  <!-- Navigation Bar -->
-  <header class="navbar">
+  <!-- Navbar -->
+  <nav class="navbar">
     <div class="logo">
-      <i class="fa-solid fa-fire"></i>
-      <span>Маркет</span>
+      <i class="fa-solid fa-store"></i> Marketplace
     </div>
-
-    <!-- User Zone -->
+    <div class="nav-links">
+      <button id="tabMarketBtn" class="nav-btn active"><i class="fa-solid fa-shop"></i> Магазин</button>
+      <button id="tabAddBtn" class="nav-btn"><i class="fa-solid fa-plus"></i> Продать</button>
+      <button id="tabProfileBtn" class="nav-btn"><i class="fa-solid fa-user"></i> Профиль</button>
+      <button id="tabChatBtn" class="nav-btn"><i class="fa-solid fa-comments"></i> Чаты</button>
+    </div>
     <div class="user-auth-zone">
       <span id="navUsername" class="user-display"><i class="fa-solid fa-circle-user"></i> Гость</span>
-      <button id="openAuthModalBtn" class="btn btn-primary"><i class="fa-solid fa-right-to-bracket"></i> Войти</button>
-      <button id="logoutBtn" class="btn btn-danger hidden"><i class="fa-solid fa-right-from-bracket"></i> Выйти</button>
+      <button id="openAuthModalBtn" class="btn btn-primary" style="padding: 6px 12px; font-size: 0.85rem;">Войти</button>
+      <button id="logoutBtn" class="btn btn-danger hidden" style="padding: 6px 12px; font-size: 0.85rem;">Выйти</button>
     </div>
-
-    <!-- Navigation Links -->
-    <nav class="nav-links">
-      <button id="tabMarketBtn" class="nav-btn active"><i class="fa-solid fa-store"></i> <span>Товары</span></button>
-      <button id="tabAddBtn" class="nav-btn"><i class="fa-solid fa-plus-circle"></i> <span>Продать</span></button>
-      <button id="tabChatBtn" class="nav-btn"><i class="fa-solid fa-comments"></i> <span>Чат</span></button>
-      <button id="tabProfileBtn" class="nav-btn"><i class="fa-solid fa-user"></i> <span>Профиль</span></button>
-    </nav>
-  </header>
+  </nav>
 
   <!-- Main Container -->
-  <main class="container">
+  <div class="container">
     
-    <!-- Tab 1: Market Grid -->
+    <!-- 1. Market Section -->
     <section id="marketSection" class="tab-content active">
-      <div class="section-header">
-        <h2><i class="fa-solid fa-fire"></i> Все Товары</h2>
-        <button id="shareSiteBtn" class="btn btn-secondary"><i class="fa-solid fa-share-nodes"></i> Поделиться сайтом</button>
+      <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+        <h2>Доступные товары</h2>
+        <button id="shareSiteBtn" class="btn btn-secondary" style="font-size: 0.85rem;"><i class="fa-solid fa-share-nodes"></i> Поделиться сайтом</button>
       </div>
       <div id="marketGrid" class="cards-grid"></div>
     </section>
 
-    <!-- Tab 2: Add Product -->
+    <!-- 2. Add Product Section -->
     <section id="addSection" class="tab-content">
       <div class="form-card">
-        <h2><i class="fa-solid fa-plus-circle"></i> Выставить товар</h2>
-        <form id="sellForm">
+        <h2>Выставить товар</h2>
+        <form id="sellForm" style="margin-top: 16px;">
           <div class="form-group">
-            <label>Название товара:</label>
-            <input type="text" id="prodTitle" placeholder="Например: VIP Аккаунт" required>
+            <label>Название товара</label>
+            <input type="text" id="prodTitle" required placeholder="Например: Премиум аккаунт">
           </div>
-          
           <div class="form-group">
-            <label>Тип товара:</label>
+            <label>Тип контента</label>
             <select id="prodType">
-              <option value="image">С картинкой</option>
-              <option value="text">Текстовый (Без картинки)</option>
+              <option value="image">Картинка / Ссылка</option>
+              <option value="text">Текстовый товар</option>
             </select>
           </div>
-
           <div class="form-group">
-            <label>Ссылка на картинку:</label>
+            <label>Ссылка на картинку (если применимо)</label>
             <input type="url" id="prodImgUrl" placeholder="https://example.com/image.jpg">
           </div>
-
           <div class="form-group">
-            <label>Публичное описание:</label>
-            <textarea id="prodDesc" rows="3" placeholder="Описание, которое видят все..." required></textarea>
+            <label>Описание</label>
+            <textarea id="prodDesc" rows="3" required placeholder="Описание товара..."></textarea>
           </div>
-
-          <div class="form-group secret-group">
-            <label><i class="fa-solid fa-shield-halved"></i> Секретные данные (пароли, логины, ссылки):</label>
-            <textarea id="prodSecretData" rows="3" placeholder="Данные, которые откроются только по паролю..." required></textarea>
+          <div class="form-group">
+            <label>Секретные данные (выдаются после оплаты/пароля)</label>
+            <textarea id="prodSecretData" rows="2" required placeholder="Текст, логин, пароль или ссылка..."></textarea>
           </div>
-
-          <div class="form-group secret-group">
-            <label><i class="fa-solid fa-lock"></i> Пароль для покупателя:</label>
-            <input type="text" id="prodSecretPassword" placeholder="Придумайте пароль для открытия" required>
+          <div class="form-group">
+            <label>Пароль для доступа к секретным данным</label>
+            <input type="text" id="prodSecretPassword" required placeholder="Придумайте пароль">
           </div>
-
-          <button type="submit" class="btn btn-primary btn-block"><i class="fa-solid fa-check"></i> Опубликовать</button>
+          <button type="submit" class="btn btn-primary btn-block">Опубликовать</button>
         </form>
       </div>
     </section>
 
-    <!-- Tab 3: Chat System -->
+    <!-- 3. Profile Section -->
+    <section id="profileSection" class="tab-content">
+      <div class="profile-card">
+        <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px;">
+          <i class="fa-solid fa-circle-user" style="font-size: 3rem; color: var(--primary);"></i>
+          <div>
+            <h2 id="profName">Гость</h2>
+            <span id="profRoleBadge" class="role-tag role-user">Вы не авторизованы</span>
+          </div>
+        </div>
+
+        <!-- Admin Panel -->
+        <div id="adminPanel" class="admin-panel hidden">
+          <h3>Панель управления (Администратор / Владелец)</h3>
+          <div id="userRolesList" class="user-roles-list"></div>
+        </div>
+
+        <h3>Мои товары</h3>
+        <div id="myProductsGrid" class="cards-grid" style="margin-top: 12px;"></div>
+      </div>
+    </section>
+
+    <!-- 4. Chat Section -->
     <section id="chatSection" class="tab-content">
       <div class="chat-container">
         <div class="chat-sidebar">
-          <h3>Чаты</h3>
-          <div id="chatUsersList"></div>
+          <h4>Ваши чаты</h4>
+          <div id="chatUsersList" style="display:flex; flex-direction:column; gap:6px; margin-top:8px;"></div>
         </div>
         <div class="chat-main">
           <div id="chatHeader" class="chat-header">Выберите собеседника</div>
           <div id="chatMessages" class="chat-messages">
-            <div class="empty-chat-msg">Выберите чат из списка</div>
+            <div class='empty-chat-msg'>Выберите чат из списка</div>
           </div>
           <form id="chatForm" class="chat-input-area">
-            <input type="text" id="chatInput" placeholder="Введите сообщение..." disabled required>
+            <input type="text" id="chatInput" placeholder="Введите сообщение..." disabled>
             <button type="submit" id="sendMsgBtn" class="btn btn-primary" disabled><i class="fa-solid fa-paper-plane"></i></button>
           </form>
         </div>
       </div>
     </section>
 
-    <!-- Tab 4: Profile & Admin Panel -->
-    <section id="profileSection" class="tab-content">
-      <div class="profile-card">
-        <div class="profile-header">
-          <i class="fa-solid fa-user-gear profile-avatar"></i>
-          <div>
-            <h2 id="profName">Гость</h2>
-            <span id="profRoleBadge" class="role-tag role-user">Пользователь</span>
-          </div>
-        </div>
+  </div>
 
-        <!-- Admin Control Panel -->
-        <div id="adminPanel" class="admin-panel hidden">
-          <h3><i class="fa-solid fa-shield-halved"></i> Панель Администрации</h3>
-          <p>Управление пользователями:</p>
-          <div id="userRolesList" class="user-roles-list"></div>
-        </div>
-
-        <div class="my-products-section">
-          <h3>Ваши товары:</h3>
-          <div id="myProductsGrid" class="cards-grid"></div>
-        </div>
-      </div>
-    </section>
-
-  </main>
-
-  <!-- Login/Register Modal -->
+  <!-- Auth Modal -->
   <div id="authModal" class="modal">
     <div class="modal-content">
       <span id="closeAuthModal" class="close-modal">&times;</span>
-      
       <div class="modal-tabs">
         <button id="showLoginBtn" class="modal-tab-btn active">Вход</button>
         <button id="showRegisterBtn" class="modal-tab-btn">Регистрация</button>
@@ -157,32 +448,25 @@
       <!-- Login Form -->
       <form id="loginForm" class="auth-form active">
         <div class="form-group">
-          <label>Логин:</label>
+          <label>Логин</label>
           <input type="text" id="loginUser" required>
         </div>
         <div class="form-group">
-          <label>Пароль:</label>
+          <label>Пароль</label>
           <input type="password" id="loginPass" required>
         </div>
-        <div id="loginError" class="error-msg hidden">Неверный логин или пароль!</div>
+        <div id="loginError" class="hidden" style="color:var(--danger); font-size:0.85rem; margin-bottom:10px;">Неверный логин или пароль!</div>
         <button type="submit" class="btn btn-primary btn-block">Войти</button>
       </form>
 
       <!-- Register Form -->
       <form id="registerForm" class="auth-form">
         <div class="form-group">
-          <label>Логин:</label>
-          <div style="display:flex; gap:5px;">
-            <input type="text" id="regUser" placeholder="Ваш логин" required style="flex:1;">
-            <select id="presetNick" style="width:110px;">
-              <option value="">Без приставки</option>
-              <option value="_988">_988</option>
-              <option value="_OFFICIAL">_OFFICIAL</option>
-            </select>
-          </div>
+          <label>Придумайте логин</label>
+          <input type="text" id="regUser" required>
         </div>
         <div class="form-group">
-          <label>Пароль:</label>
+          <label>Пароль</label>
           <input type="password" id="regPass" required>
         </div>
         <button type="submit" class="btn btn-primary btn-block">Зарегистрироваться</button>
@@ -190,6 +474,350 @@
     </div>
   </div>
 
-  <script src="script.js"></script>
+  <!-- JavaScript Script -->
+  <script>
+    let registeredUsers = JSON.parse(localStorage.getItem('mp_users')) || [
+      { username: "KOROL_988", pass: "said9800", role: "Владелец сайта", isBlocked: false },
+      { username: "Admin_Ali", pass: "ali1234", role: "Администратор", isBlocked: false },
+      { username: "SimpleUser", pass: "1234", role: "Пользователь", isBlocked: false }
+    ];
+
+    let currentUser = JSON.parse(localStorage.getItem('mp_current_user')) || null;
+    let activeChatPartner = null;
+
+    let products = JSON.parse(localStorage.getItem('mp_products')) || [
+      {
+        id: 1,
+        seller: "KOROL_988",
+        title: "Тестовый Товар Владельца",
+        type: "image",
+        img: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=500",
+        desc: "Это пример товара, который видят все пользователи.",
+        secretData: "Логин: admin | Пароль: secret_pass",
+        passKey: "123"
+      }
+    ];
+
+    let chats = JSON.parse(localStorage.getItem('mp_chats')) || [];
+
+    function saveData() {
+      localStorage.setItem('mp_users', JSON.stringify(registeredUsers));
+      localStorage.setItem('mp_products', JSON.stringify(products));
+      localStorage.setItem('mp_chats', JSON.stringify(chats));
+      if (currentUser) {
+        localStorage.setItem('mp_current_user', JSON.stringify(currentUser));
+      } else {
+        localStorage.removeItem('mp_current_user');
+      }
+    }
+
+    const tabMarketBtn = document.getElementById("tabMarketBtn");
+    const tabAddBtn = document.getElementById("tabAddBtn");
+    const tabProfileBtn = document.getElementById("tabProfileBtn");
+    const tabChatBtn = document.getElementById("tabChatBtn");
+
+    const marketSection = document.getElementById("marketSection");
+    const addSection = document.getElementById("addSection");
+    const profileSection = document.getElementById("profileSection");
+    const chatSection = document.getElementById("chatSection");
+
+    const marketGrid = document.getElementById("marketGrid");
+    const myProductsGrid = document.getElementById("myProductsGrid");
+    const sellForm = document.getElementById("sellForm");
+
+    const authModal = document.getElementById("authModal");
+    const openAuthModalBtn = document.getElementById("openAuthModalBtn");
+    const closeAuthModal = document.getElementById("closeAuthModal");
+
+    const showLoginBtn = document.getElementById("showLoginBtn");
+    const showRegisterBtn = document.getElementById("showRegisterBtn");
+    const loginForm = document.getElementById("loginForm");
+    const registerForm = document.getElementById("registerForm");
+
+    const navUsername = document.getElementById("navUsername");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const loginError = document.getElementById("loginError");
+    const shareSiteBtn = document.getElementById("shareSiteBtn");
+
+    const adminPanel = document.getElementById("adminPanel");
+    const userRolesList = document.getElementById("userRolesList");
+
+    if (shareSiteBtn) {
+      shareSiteBtn.onclick = () => {
+        const cleanUrl = window.location.origin + window.location.pathname;
+        navigator.clipboard.writeText(cleanUrl);
+        alert("Ссылка на сайт скопирована!\n" + cleanUrl);
+      };
+    }
+
+    function resetTabs() {
+      [marketSection, addSection, profileSection, chatSection].forEach(s => s?.classList.remove("active"));
+      [tabMarketBtn, tabAddBtn, tabProfileBtn, tabChatBtn].forEach(b => b?.classList.remove("active"));
+    }
+
+    function switchTab(tabName) {
+      resetTabs();
+      if (tabName === 'market') {
+        marketSection?.classList.add("active");
+        tabMarketBtn?.classList.add("active");
+        renderMarket();
+      } else if (tabName === 'add') {
+        addSection?.classList.add("active");
+        tabAddBtn?.classList.add("active");
+      } else if (tabName === 'profile') {
+        profileSection?.classList.add("active");
+        tabProfileBtn?.classList.add("active");
+        renderProfile();
+      } else if (tabName === 'chat') {
+        chatSection?.classList.add("active");
+        tabChatBtn?.classList.add("active");
+        renderChatList();
+      }
+      localStorage.setItem('mp_active_tab', tabName);
+    }
+
+    if (tabMarketBtn) tabMarketBtn.onclick = () => switchTab('market');
+    if (tabAddBtn) tabAddBtn.onclick = () => switchTab('add');
+    if (tabProfileBtn) tabProfileBtn.onclick = () => switchTab('profile');
+    if (tabChatBtn) tabChatBtn.onclick = () => switchTab('chat');
+
+    if (openAuthModalBtn) openAuthModalBtn.onclick = () => authModal.style.display = "flex";
+    if (closeAuthModal) closeAuthModal.onclick = () => authModal.style.display = "none";
+
+    if (showLoginBtn && showRegisterBtn) {
+      showLoginBtn.onclick = () => {
+        showLoginBtn.classList.add("active"); showRegisterBtn.classList.remove("active");
+        loginForm.classList.add("active"); registerForm.classList.remove("active");
+      };
+      showRegisterBtn.onclick = () => {
+        showRegisterBtn.classList.add("active"); showLoginBtn.classList.remove("active");
+        registerForm.classList.add("active"); loginForm.classList.remove("active");
+      };
+    }
+
+    if (registerForm) {
+      registerForm.onsubmit = (e) => {
+        e.preventDefault();
+        let u = document.getElementById("regUser").value.trim();
+        const p = document.getElementById("regPass").value.trim();
+
+        if (registeredUsers.some(user => user.username === u)) {
+          alert("Этот логин уже занят!");
+          return;
+        }
+
+        registeredUsers.push({ username: u, pass: p, role: "Пользователь", isBlocked: false });
+        saveData();
+        alert(`Аккаунт успешно создан! Ваш логин: ${u}`);
+        registerForm.reset();
+        showLoginBtn.click();
+      };
+    }
+
+    if (loginForm) {
+      loginForm.onsubmit = (e) => {
+        e.preventDefault();
+        const u = document.getElementById("loginUser").value.trim();
+        const p = document.getElementById("loginPass").value.trim();
+        const userFound = registeredUsers.find(user => user.username === u && user.pass === p);
+
+        if (userFound) {
+          currentUser = userFound;
+          saveData();
+          updateUserNavUI();
+          authModal.style.display = "none";
+          loginForm.reset();
+          alert(`Добро пожаловать, ${currentUser.username}!`);
+          renderMarket();
+          renderProfile();
+        } else {
+          if (loginError) loginError.classList.remove("hidden");
+        }
+      };
+    }
+
+    if (logoutBtn) {
+      logoutBtn.onclick = () => {
+        currentUser = null;
+        saveData();
+        updateUserNavUI();
+        renderMarket();
+        renderProfile();
+      };
+    }
+
+    function updateUserNavUI() {
+      if (currentUser) {
+        navUsername.innerHTML = `<i class="fa-solid fa-circle-user"></i> ${currentUser.username}`;
+        openAuthModalBtn.classList.add("hidden");
+        logoutBtn.classList.remove("hidden");
+        if (loginError) loginError.classList.add("hidden");
+      } else {
+        navUsername.innerHTML = `<i class="fa-solid fa-circle-user"></i> Гость`;
+        openAuthModalBtn.classList.remove("hidden");
+        logoutBtn.classList.add("hidden");
+      }
+    }
+
+    if (sellForm) {
+      sellForm.onsubmit = (e) => {
+        e.preventDefault();
+        if (!currentUser) {
+          alert("Для публикации товара необходимо войти в аккаунт!");
+          authModal.style.display = "flex";
+          return;
+        }
+
+        const title = document.getElementById("prodTitle").value.trim();
+        const type = document.getElementById("prodType").value;
+        const img = document.getElementById("prodImgUrl").value.trim() || "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=500";
+        const desc = document.getElementById("prodDesc").value.trim();
+        const secretData = document.getElementById("prodSecretData").value.trim();
+        const passKey = document.getElementById("prodSecretPassword").value.trim();
+
+        products.unshift({ id: Date.now(), seller: currentUser.username, title, type, img, desc, secretData, passKey });
+        saveData();
+        alert("Товар успешно опубликован!");
+        sellForm.reset();
+        switchTab('market');
+      };
+    }
+
+    function renderMarket() {
+      if (!marketGrid) return;
+      marketGrid.innerHTML = "";
+      products = JSON.parse(localStorage.getItem('mp_products')) || [];
+
+      if (products.length === 0) {
+        marketGrid.innerHTML = "<p style='color:#9ca3af; grid-column: 1/-1; text-align: center; padding: 40px;'>Товаров пока нет.</p>";
+        return;
+      }
+
+      const canDelete = currentUser && (currentUser.role === "Администратор" || currentUser.role === "Владелец сайта");
+
+      products.forEach((p) => {
+        const card = document.createElement("div");
+        card.className = "card-item";
+        let mediaHTML = p.type === "image" ? `<img src="${p.img}" alt="${p.title}">` : `<div class="text-type-badge"><i class="fa-solid fa-file-lines"></i> Текст</div>`;
+        let deleteBtnHTML = canDelete ? `<button class="btn btn-danger" style="padding: 4px 8px; font-size: 0.75rem;" onclick="deleteProduct(${p.id})">Удалить</button>` : '';
+
+        card.innerHTML = `
+          ${mediaHTML}
+          <div class="card-body">
+            <div>
+              <div class="seller-info">
+                <span><b>${p.seller}</b></span>
+                <div>
+                  <button class="btn btn-warning" style="padding: 4px 8px; font-size: 0.75rem;" onclick="openChatWithSeller('${p.seller}')">Чат</button>
+                  ${deleteBtnHTML}
+                </div>
+              </div>
+              <h3>${p.title}</h3>
+              <p>${p.desc}</p>
+            </div>
+            <div class="access-zone">
+              <label style="font-size: 0.8rem; color:#9ca3af;">Пароль к товару:</label>
+              <div style="display:flex; gap:5px; margin-top:4px;">
+                <input type="password" id="passInput_${p.id}" placeholder="Пароль">
+                <button class="btn btn-primary" onclick="unlockSecret(${p.id})">Открыть</button>
+              </div>
+              <div id="secretResult_${p.id}" class="hidden"></div>
+            </div>
+          </div>
+        `;
+        marketGrid.appendChild(card);
+      });
+    }
+
+    window.deleteProduct = function(id) {
+      if (confirm("Удалить товар?")) {
+        products = products.filter(p => p.id !== id);
+        saveData();
+        renderMarket();
+      }
+    };
+
+    window.unlockSecret = function(id) {
+      const prod = products.find(p => p.id === id);
+      const inputEl = document.getElementById(`passInput_${id}`);
+      const resDiv = document.getElementById(`secretResult_${id}`);
+      if (inputEl && prod && inputEl.value.trim() === prod.passKey) {
+        resDiv.className = "unlocked-data";
+        resDiv.innerHTML = `<b>Секрет:</b><br>${prod.secretData}`;
+      } else {
+        alert("Неверный пароль!");
+      }
+    };
+
+    function renderProfile() {
+      const profName = document.getElementById("profName");
+      const profRoleBadge = document.getElementById("profRoleBadge");
+      if (!currentUser) {
+        if (profName) profName.textContent = "Гость";
+        if (profRoleBadge) { profRoleBadge.textContent = "Не авторизован"; profRoleBadge.className = "role-tag role-user"; }
+        if (adminPanel) adminPanel.classList.add("hidden");
+        if (myProductsGrid) myProductsGrid.innerHTML = "<p style='color:#9ca3af;'>Вы не вошли.</p>";
+        return;
+      }
+      if (profName) profName.textContent = currentUser.username;
+      if (profRoleBadge) {
+        profRoleBadge.textContent = currentUser.role;
+        profRoleBadge.className = currentUser.role === "Владелец сайта" ? "role-tag role-owner" : (currentUser.role === "Администратор" ? "role-tag role-admin" : "role-tag role-user");
+      }
+      if (currentUser.role === "Владелец сайта" || currentUser.role === "Администратор") {
+        if (adminPanel) adminPanel.classList.remove("hidden");
+        renderAdminUserList();
+      } else {
+        if (adminPanel) adminPanel.classList.add("hidden");
+      }
+      if (myProductsGrid) {
+        myProductsGrid.innerHTML = "";
+        const myProds = products.filter(p => p.seller === currentUser.username);
+        myProds.forEach(p => {
+          const card = document.createElement("div");
+          card.className = "card-item";
+          card.innerHTML = `<div class="card-body"><h3>${p.title}</h3><p>${p.desc}</p><p style="color:#f59e0b; font-size:0.85rem;">Ваш пароль: <b>${p.passKey}</b></p></div>`;
+          myProductsGrid.appendChild(card);
+        });
+      }
+    }
+
+    function renderAdminUserList() {
+      if (!userRolesList) return;
+      userRolesList.innerHTML = "";
+      registeredUsers = JSON.parse(localStorage.getItem('mp_users')) || [];
+      const isOwner = currentUser && currentUser.role === "Владелец сайта";
+      registeredUsers.forEach(u => {
+        if (currentUser && u.username === currentUser.username) return;
+        const row = document.createElement("div");
+        row.className = "user-role-row";
+        let roleActionBtns = "";
+        if (isOwner) {
+          if (u.role === "Администратор") roleActionBtns = `<button class="btn btn-warning" style="font-size:0.75rem;" onclick="changeRole('${u.username}', 'Пользователь')">Снять</button>`;
+          else if (u.role === "Пользователь") roleActionBtns = `<button class="btn btn-primary" style="font-size:0.75rem;" onclick="changeRole('${u.username}', 'Администратор')">Админ</button>`;
+        }
+        row.innerHTML = `<div><b>${u.username}</b> <span class="role-tag">${u.role}</span></div><div>${roleActionBtns}</div>`;
+        userRolesList.appendChild(row);
+      });
+    }
+
+    window.changeRole = function(username, newRole) {
+      const targetUser = registeredUsers.find(u => u.username === username);
+      if (targetUser) { targetUser.role = newRole; saveData(); renderProfile(); }
+    };
+
+    window.openChatWithSeller = function(sellerName) {
+      if (!currentUser) { alert("Войдите в аккаунт!"); authModal.style.display = "flex"; return; }
+      if (currentUser.username === sellerName) { alert("Нельзя писать себе!"); return; }
+      activeChatPartner = sellerName;
+      switchTab('chat');
+    };
+
+    document.addEventListener("DOMContentLoaded", () => {
+      saveData();
+      updateUserNavUI();
+      switchTab(localStorage.getItem('mp_active_tab') || 'market');
+    });
+  </script>
 </body>
 </html>
