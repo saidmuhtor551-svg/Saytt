@@ -1,40 +1,33 @@
-// ==========================================
-// 1. DATABASE & LOCALSTORAGE INITIALIZATION
-// ==========================================
-
-// Foydalanuvchilarni localStorage'dan olish yoki boshlang'ich qiymat berish
-let registeredUsers = JSON.parse(localStorage.getItem("registeredUsers")) || [
+// Database Initialization - LocalStorage or Default
+let registeredUsers = JSON.parse(localStorage.getItem('mp_users')) || [
   { username: "KOROL_988", pass: "said9800", role: "Владелец сайта", isBlocked: false },
   { username: "Admin_Ali", pass: "ali1234", role: "Администратор", isBlocked: false },
   { username: "SimpleUser", pass: "1234", role: "Пользователь", isBlocked: false }
 ];
 
-// Tovar va chatlarni saqlash
-let products = JSON.parse(localStorage.getItem("products")) || [];
-let chats = JSON.parse(localStorage.getItem("chats")) || [
+// Current Logged-in User Persistence
+let currentUser = JSON.parse(localStorage.getItem('mp_current_user')) || null;
+let activeChatPartner = null;
+
+let products = JSON.parse(localStorage.getItem('mp_products')) || [];
+let chats = JSON.parse(localStorage.getItem('mp_chats')) || [
   { sender: "Admin_Ali", receiver: "KOROL_988", text: "Здравствуйте! У меня вопрос по поводу товара." },
   { sender: "KOROL_988", receiver: "Admin_Ali", text: "Приветствую! Задавайте, слушаю вас." }
 ];
 
-// Sahifa yangilanganda ham akkountdan chiqib ketmaslik uchun
-let currentUser = JSON.parse(localStorage.getItem("currentUser")) || null;
-let activeChatPartner = null;
-
-// Ma'lumotlarni saqlash funksiyalari
-function saveUsers() { localStorage.setItem("registeredUsers", JSON.stringify(registeredUsers)); }
-function saveProducts() { localStorage.setItem("products", JSON.stringify(products)); }
-function saveChats() { localStorage.setItem("chats", JSON.stringify(chats)); }
-function saveCurrentUser() { 
+// Save state to LocalStorage
+function saveData() {
+  localStorage.setItem('mp_users', JSON.stringify(registeredUsers));
+  localStorage.setItem('mp_products', JSON.stringify(products));
+  localStorage.setItem('mp_chats', JSON.stringify(chats));
   if (currentUser) {
-    localStorage.setItem("currentUser", JSON.stringify(currentUser));
+    localStorage.setItem('mp_current_user', JSON.stringify(currentUser));
   } else {
-    localStorage.removeItem("currentUser");
+    localStorage.removeItem('mp_current_user');
   }
 }
 
-// ==========================================
-// 2. DOM ELEMENTS
-// ==========================================
+// DOM Elements
 const tabMarketBtn = document.getElementById("tabMarketBtn");
 const tabAddBtn = document.getElementById("tabAddBtn");
 const tabProfileBtn = document.getElementById("tabProfileBtn");
@@ -68,30 +61,13 @@ const userRolesList = document.getElementById("userRolesList");
 const blockedOverlay = document.getElementById("blockedOverlay");
 const blockedLogoutBtn = document.getElementById("blockedLogoutBtn");
 
-const chatUsersList = document.getElementById("chatUsersList");
-const chatHeader = document.getElementById("chatHeader");
-const chatMessages = document.getElementById("chatMessages");
-const chatForm = document.getElementById("chatForm");
-const chatInput = document.getElementById("chatInput");
-const sendMsgBtn = document.getElementById("sendMsgBtn");
-
-// ==========================================
-// 3. INITIAL STATE & AUTH MANAGEMENT
-// ==========================================
-
-// Sahifa yuklanganda akkauntdagilarni tiklash
-function initApp() {
-  if (currentUser) {
-    navUsername.textContent = currentUser.username;
-    openAuthModalBtn.classList.add("hidden");
-    logoutBtn.classList.remove("hidden");
-  } else {
-    navUsername.textContent = "Гость";
-    openAuthModalBtn.classList.remove("hidden");
-    logoutBtn.classList.add("hidden");
-  }
-  checkBlockedState();
-  renderMarket();
+// Copy Direct Clean URL
+if (shareSiteBtn) {
+  shareSiteBtn.onclick = () => {
+    const cleanUrl = window.location.origin + window.location.pathname;
+    navigator.clipboard.writeText(cleanUrl);
+    alert("Ссылка на сайт скопирована!\n" + cleanUrl);
+  };
 }
 
 // Blocked User Check
@@ -106,33 +82,45 @@ function checkBlockedState() {
 if (blockedLogoutBtn) {
   blockedLogoutBtn.onclick = () => {
     currentUser = null;
-    saveCurrentUser();
+    saveData();
     checkBlockedState();
     location.reload();
   };
 }
 
-// Copy Site Link
-if (shareSiteBtn) {
-  shareSiteBtn.onclick = () => {
-    const cleanUrl = window.location.origin + window.location.pathname;
-    navigator.clipboard.writeText(cleanUrl);
-    alert("Ссылка на сайт скопирована!\n" + cleanUrl);
-  };
-}
-
-// Navigation / Tab Switching
+// Tab Switching & Saving State
 function resetTabs() {
   [marketSection, addSection, profileSection, chatSection].forEach(s => s?.classList.remove("active"));
   [tabMarketBtn, tabAddBtn, tabProfileBtn, tabChatBtn].forEach(b => b?.classList.remove("active"));
 }
 
-if (tabMarketBtn) tabMarketBtn.onclick = () => { resetTabs(); marketSection.classList.add("active"); tabMarketBtn.classList.add("active"); renderMarket(); };
-if (tabAddBtn) tabAddBtn.onclick = () => { resetTabs(); addSection.classList.add("active"); tabAddBtn.classList.add("active"); };
-if (tabProfileBtn) tabProfileBtn.onclick = () => { resetTabs(); profileSection.classList.add("active"); tabProfileBtn.classList.add("active"); renderProfile(); };
-if (tabChatBtn) tabChatBtn.onclick = () => { resetTabs(); chatSection.classList.add("active"); tabChatBtn.classList.add("active"); renderChatList(); };
+function switchTab(tabName) {
+  resetTabs();
+  if (tabName === 'market') {
+    marketSection?.classList.add("active");
+    tabMarketBtn?.classList.add("active");
+    renderMarket();
+  } else if (tabName === 'add') {
+    addSection?.classList.add("active");
+    tabAddBtn?.classList.add("active");
+  } else if (tabName === 'profile') {
+    profileSection?.classList.add("active");
+    tabProfileBtn?.classList.add("active");
+    renderProfile();
+  } else if (tabName === 'chat') {
+    chatSection?.classList.add("active");
+    tabChatBtn?.classList.add("active");
+    renderChatList();
+  }
+  localStorage.setItem('mp_active_tab', tabName);
+}
 
-// Auth Modal
+if (tabMarketBtn) tabMarketBtn.onclick = () => switchTab('market');
+if (tabAddBtn) tabAddBtn.onclick = () => switchTab('add');
+if (tabProfileBtn) tabProfileBtn.onclick = () => switchTab('profile');
+if (tabChatBtn) tabChatBtn.onclick = () => switchTab('chat');
+
+// Auth Modal Controls
 if (openAuthModalBtn) openAuthModalBtn.onclick = () => authModal.style.display = "flex";
 if (closeAuthModal) closeAuthModal.onclick = () => authModal.style.display = "none";
 
@@ -164,7 +152,7 @@ if (registerForm) {
 
     const newUser = { username: u, pass: p, role: "Пользователь", isBlocked: false };
     registeredUsers.push(newUser);
-    saveUsers();
+    saveData();
 
     alert(`Аккаунт успешно создан! Ваш ник: ${u}`);
     registerForm.reset();
@@ -183,19 +171,16 @@ if (loginForm) {
 
     if (userFound) {
       currentUser = userFound;
-      saveCurrentUser();
+      saveData();
       checkBlockedState();
-      
+
       if (currentUser.isBlocked) return;
 
-      navUsername.textContent = currentUser.username;
-      openAuthModalBtn.classList.add("hidden");
-      logoutBtn.classList.remove("hidden");
-      if (loginError) loginError.classList.add("hidden");
+      updateUserNavUI();
       authModal.style.display = "none";
       loginForm.reset();
-      
-      alert(`Добро пожаловать, ${currentUser.username}! Вы вошли как (${currentUser.role})`);
+
+      alert(`Добро пожаловать, ${currentUser.username}!`);
       renderMarket();
     } else {
       if (loginError) loginError.classList.remove("hidden");
@@ -207,20 +192,28 @@ if (loginForm) {
 if (logoutBtn) {
   logoutBtn.onclick = () => {
     currentUser = null;
-    saveCurrentUser();
-    navUsername.textContent = "Гость";
-    openAuthModalBtn.classList.remove("hidden");
-    logoutBtn.classList.add("hidden");
+    saveData();
+    updateUserNavUI();
     checkBlockedState();
     renderMarket();
   };
 }
 
-// ==========================================
-// 4. PRODUCTS / MARKET MANAGEMENT
-// ==========================================
+// UI Nav Update
+function updateUserNavUI() {
+  if (currentUser) {
+    navUsername.textContent = currentUser.username;
+    openAuthModalBtn.classList.add("hidden");
+    logoutBtn.classList.remove("hidden");
+    if (loginError) loginError.classList.add("hidden");
+  } else {
+    navUsername.textContent = "Гость";
+    openAuthModalBtn.classList.remove("hidden");
+    logoutBtn.classList.add("hidden");
+  }
+}
 
-// Add Product
+// Add Product Handle
 if (sellForm) {
   sellForm.onsubmit = (e) => {
     e.preventDefault();
@@ -235,6 +228,7 @@ if (sellForm) {
     const img = document.getElementById("prodImgUrl").value.trim() || "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=500";
     const desc = document.getElementById("prodDesc").value.trim();
     const secretData = document.getElementById("prodSecretData").value.trim();
+    const passKey = document.getElementById("prodSecretPassword").value.trim();
 
     const newProd = {
       id: Date.now(),
@@ -243,19 +237,19 @@ if (sellForm) {
       type,
       img,
       desc,
-      secretData
+      secretData,
+      passKey
     };
 
     products.unshift(newProd);
-    saveProducts();
-
+    saveData();
     alert("Товар успешно выставлен на продажу!");
     sellForm.reset();
-    tabMarketBtn.click();
+    switchTab('market');
   };
 }
 
-// Render Market Grid
+// Render Market
 function renderMarket() {
   if (!marketGrid) return;
   marketGrid.innerHTML = "";
@@ -299,7 +293,11 @@ function renderMarket() {
         </div>
         
         <div class="access-zone">
-          <button class="btn btn-primary btn-block" onclick="showProductDetails(${p.id})">Просмотреть данные</button>
+          <label style="font-size: 0.8rem; color:#9ca3af;">Введите пароль для просмотра контента:</label>
+          <div style="display:flex; gap:5px; margin-top:4px;">
+            <input type="password" id="passInput_${p.id}" placeholder="Пароль">
+            <button class="btn btn-primary" onclick="unlockSecret(${p.id})">Открыть</button>
+          </div>
           <div id="secretResult_${p.id}" class="hidden"></div>
         </div>
       </div>
@@ -308,32 +306,31 @@ function renderMarket() {
   });
 }
 
-// Show Product Secret Data Directly
-window.showProductDetails = function(id) {
-  const prod = products.find(p => p.id === id);
-  const resDiv = document.getElementById(`secretResult_${id}`);
-
-  if (resDiv) {
-    resDiv.className = "unlocked-data";
-    resDiv.innerHTML = `<b>Информация:</b><br>${prod.secretData}`;
-    resDiv.classList.remove("hidden");
-  }
-};
-
-// Delete Product
+// Delete Product Function
 window.deleteProduct = function(id) {
   if (confirm("Вы действительно хотите удалить этот товар?")) {
     products = products.filter(p => p.id !== id);
-    saveProducts();
+    saveData();
     alert("Товар успешно удален!");
     renderMarket();
   }
 };
 
-// ==========================================
-// 5. PROFILE & ADMIN PANEL
-// ==========================================
+// Unlock Secret Content by Password
+window.unlockSecret = function(id) {
+  const prod = products.find(p => p.id === id);
+  const inputEl = document.getElementById(`passInput_${id}`);
+  const resDiv = document.getElementById(`secretResult_${id}`);
 
+  if (inputEl && inputEl.value.trim() === prod.passKey) {
+    resDiv.className = "unlocked-data";
+    resDiv.innerHTML = `<i class="fa-solid fa-lock-open"></i> <b>Секретная информация:</b><br>${prod.secretData}`;
+  } else {
+    alert("Неверный пароль!");
+  }
+};
+
+// Render Profile & Admin Panel
 function renderProfile() {
   const profName = document.getElementById("profName");
   const profRoleBadge = document.getElementById("profRoleBadge");
@@ -344,13 +341,13 @@ function renderProfile() {
       profRoleBadge.textContent = "Вы не авторизованы";
       profRoleBadge.className = "role-tag role-user";
     }
-    adminPanel.classList.add("hidden");
-    myProductsGrid.innerHTML = "<p style='color:#9ca3af;'>Вы не вошли в систему.</p>";
+    if (adminPanel) adminPanel.classList.add("hidden");
+    if (myProductsGrid) myProductsGrid.innerHTML = "<p style='color:#9ca3af;'>Вы не вошли в систему.</p>";
     return;
   }
 
   if (profName) profName.textContent = currentUser.username;
-  
+
   if (profRoleBadge) {
     profRoleBadge.textContent = currentUser.role;
     if (currentUser.role === "Владелец сайта") profRoleBadge.className = "role-tag role-owner";
@@ -359,33 +356,37 @@ function renderProfile() {
   }
 
   if (currentUser.role === "Владелец сайта" || currentUser.role === "Администратор") {
-    adminPanel.classList.remove("hidden");
+    if (adminPanel) adminPanel.classList.remove("hidden");
     renderAdminUserList();
   } else {
-    adminPanel.classList.add("hidden");
+    if (adminPanel) adminPanel.classList.add("hidden");
   }
 
-  myProductsGrid.innerHTML = "";
-  const myProds = products.filter(p => p.seller === currentUser.username);
-  if (myProds.length === 0) {
-    myProductsGrid.innerHTML = "<p style='color:#9ca3af;'>Вы еще не выставили ни одного товара.</p>";
-  } else {
-    myProds.forEach(p => {
-      const card = document.createElement("div");
-      card.className = "card-item card";
-      card.innerHTML = `
-        <div class="card-body">
-          <h3>${p.title}</h3>
-          <p>${p.desc}</p>
-        </div>
-      `;
-      myProductsGrid.appendChild(card);
-    });
+  if (myProductsGrid) {
+    myProductsGrid.innerHTML = "";
+    const myProds = products.filter(p => p.seller === currentUser.username);
+    if (myProds.length === 0) {
+      myProductsGrid.innerHTML = "<p style='color:#9ca3af;'>Вы еще не выставили ни одного товара.</p>";
+    } else {
+      myProds.forEach(p => {
+        const card = document.createElement("div");
+        card.className = "card-item card";
+        card.innerHTML = `
+          <div class="card-body">
+            <h3>${p.title}</h3>
+            <p>${p.desc}</p>
+            <p style="font-size:0.85rem; color:#f59e0b;">Ваш пароль к товару: <b>${p.passKey}</b></p>
+          </div>
+        `;
+        myProductsGrid.appendChild(card);
+      });
+    }
   }
 }
 
 // Render Admin Management List
 function renderAdminUserList() {
+  if (!userRolesList) return;
   userRolesList.innerHTML = "";
   const isOwner = currentUser.role === "Владелец сайта";
 
@@ -394,7 +395,7 @@ function renderAdminUserList() {
 
     const row = document.createElement("div");
     row.className = "user-role-row";
-    
+
     let blockBtn = u.isBlocked 
       ? `<button class="btn btn-success" style="padding:4px 8px; font-size:0.8rem;" onclick="toggleBlockUser('${u.username}')">Разблокировать</button>`
       : `<button class="btn btn-danger" style="padding:4px 8px; font-size:0.8rem;" onclick="toggleBlockUser('${u.username}')">Заблокировать</button>`;
@@ -425,7 +426,7 @@ function renderAdminUserList() {
   });
 }
 
-// Change User Role
+// Change Role (Owner Only)
 window.changeRole = function(username, newRole) {
   if (currentUser.role !== "Владелец сайта") {
     alert("Только Владелец сайта может назначать или снимать Администраторов!");
@@ -434,7 +435,7 @@ window.changeRole = function(username, newRole) {
   const targetUser = registeredUsers.find(u => u.username === username);
   if (targetUser) {
     targetUser.role = newRole;
-    saveUsers();
+    saveData();
     alert(`Пользователю ${username} присвоена роль: ${newRole}`);
     renderProfile();
   }
@@ -449,119 +450,128 @@ window.toggleBlockUser = function(username) {
       return;
     }
     targetUser.isBlocked = !targetUser.isBlocked;
-    saveUsers();
-    alert(`Пользователь ${username} ${targetUser.isBlocked ? "заблокирован" : "разблокирован"}!`);
+    saveData();
+    alert(`Пользователь ${username} ${targetUser.isBlocked ? 'заблокирован' : 'разблокирован'}!`);
     renderAdminUserList();
   }
 };
 
-// ==========================================
-// 6. CHAT SYSTEM
-// ==========================================
-
+// Chat Functions
 window.openChatWithSeller = function(sellerName) {
   if (!currentUser) {
-    alert("Для общения с продавцом необходимо авторизоваться!");
+    alert("Для общения с продавцом необходимо войти в аккаунт!");
     authModal.style.display = "flex";
     return;
   }
-  if (sellerName === currentUser.username) {
+  if (currentUser.username === sellerName) {
     alert("Вы не можете написать самому себе!");
     return;
   }
-
-  tabChatBtn.click();
-  selectChatPartner(sellerName);
+  activeChatPartner = sellerName;
+  switchTab('chat');
+  renderChatMessages();
 };
 
 function renderChatList() {
+  const chatUsersList = document.getElementById("chatUsersList");
   if (!chatUsersList) return;
   chatUsersList.innerHTML = "";
 
   if (!currentUser) {
-    chatUsersList.innerHTML = "<p style='color:#9ca3af; font-size:0.8rem;'>Войдите, чтобы пользоваться чатом.</p>";
-    chatMessages.innerHTML = "<div class='empty-chat-msg'>Авторизуйтесь для доступа к сообщениям</div>";
-    chatInput.disabled = true;
-    sendMsgBtn.disabled = true;
+    chatUsersList.innerHTML = "<p style='color:#64748b; font-size:0.8rem;'>Войдите в аккаунт</p>";
     return;
   }
 
-  const availableUsers = registeredUsers.filter(u => u.username !== currentUser.username);
+  const userPartners = new Set();
+  chats.forEach(c => {
+    if (c.sender === currentUser.username) userPartners.add(c.receiver);
+    if (c.receiver === currentUser.username) userPartners.add(c.sender);
+  });
 
-  if (availableUsers.length === 0) {
-    chatUsersList.innerHTML = "<p style='color:#9ca3af; font-size:0.8rem;'>Нет доступных пользователей.</p>";
+  if (userPartners.size === 0) {
+    chatUsersList.innerHTML = "<p style='color:#64748b; font-size:0.8rem;'>Чатов пока нет</p>";
     return;
   }
 
-  availableUsers.forEach(u => {
+  userPartners.forEach(partner => {
     const btn = document.createElement("button");
-    btn.className = `chat-user-btn ${activeChatPartner === u.username ? "active" : ""}`;
-    btn.innerHTML = `<i class="fa-solid fa-user"></i> ${u.username}`;
-    btn.onclick = () => selectChatPartner(u.username);
+    btn.className = `chat-user-btn ${activeChatPartner === partner ? 'active' : ''}`;
+    btn.innerHTML = `<i class="fa-solid fa-user"></i> ${partner}`;
+    btn.onclick = () => {
+      activeChatPartner = partner;
+      renderChatList();
+      renderChatMessages();
+    };
     chatUsersList.appendChild(btn);
   });
 }
 
-function selectChatPartner(partnerUsername) {
-  activeChatPartner = partnerUsername;
-  chatHeader.textContent = `Чат с: ${partnerUsername}`;
-  
-  chatInput.disabled = false;
-  sendMsgBtn.disabled = false;
-  
-  renderChatList();
-  renderMessages();
-}
+function renderChatMessages() {
+  const chatHeader = document.getElementById("chatHeader");
+  const chatMessages = document.getElementById("chatMessages");
+  const chatInput = document.getElementById("chatInput");
+  const sendMsgBtn = document.getElementById("sendMsgBtn");
 
-function renderMessages() {
-  if (!chatMessages) return;
-  chatMessages.innerHTML = "";
-
-  if (!currentUser || !activeChatPartner) {
-    chatMessages.innerHTML = "<div class='empty-chat-msg'>Выберите чат из списка</div>";
+  if (!activeChatPartner || !currentUser) {
+    if (chatHeader) chatHeader.textContent = "Выберите собеседника";
+    if (chatMessages) chatMessages.innerHTML = "<div class='empty-chat-msg'>Выберите чат из списка</div>";
+    if (chatInput) chatInput.disabled = true;
+    if (sendMsgBtn) sendMsgBtn.disabled = true;
     return;
   }
 
-  const conversation = chats.filter(m => 
-    (m.sender === currentUser.username && m.receiver === activeChatPartner) ||
-    (m.sender === activeChatPartner && m.receiver === currentUser.username)
+  if (chatHeader) chatHeader.textContent = `Чат с ${activeChatPartner}`;
+  if (chatInput) chatInput.disabled = false;
+  if (sendMsgBtn) sendMsgBtn.disabled = false;
+
+  const activeMsgs = chats.filter(c => 
+    (c.sender === currentUser.username && c.receiver === activeChatPartner) ||
+    (c.sender === activeChatPartner && c.receiver === currentUser.username)
   );
 
-  if (conversation.length === 0) {
-    chatMessages.innerHTML = "<div class='empty-chat-msg'>Сообщений пока нет. Напишите первым!</div>";
-    return;
+  if (chatMessages) {
+    chatMessages.innerHTML = "";
+    if (activeMsgs.length === 0) {
+      chatMessages.innerHTML = "<div class='empty-chat-msg'>Напишите первое сообщение...</div>";
+    } else {
+      activeMsgs.forEach(m => {
+        const bubble = document.createElement("div");
+        bubble.className = `msg-bubble ${m.sender === currentUser.username ? 'msg-me' : 'msg-other'}`;
+        bubble.textContent = m.text;
+        chatMessages.appendChild(bubble);
+      });
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
   }
-
-  conversation.forEach(msg => {
-    const bubble = document.createElement("div");
-    const isMe = msg.sender === currentUser.username;
-    
-    bubble.className = `msg-bubble ${isMe ? "msg-me" : "msg-other"}`;
-    bubble.textContent = msg.text;
-    chatMessages.appendChild(bubble);
-  });
-
-  chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
+// Chat Send Form
+const chatForm = document.getElementById("chatForm");
 if (chatForm) {
   chatForm.onsubmit = (e) => {
     e.preventDefault();
+    const chatInput = document.getElementById("chatInput");
     const text = chatInput.value.trim();
 
-    if (!text || !currentUser || !activeChatPartner) return;
-
-    chats.push({
-      sender: currentUser.username,
-      receiver: activeChatPartner,
-      text: text
-    });
-    saveChats();
-
-    chatInput.value = "";
-    renderMessages();
+    if (text && currentUser && activeChatPartner) {
+      chats.push({
+        sender: currentUser.username,
+        receiver: activeChatPartner,
+        text
+      });
+      saveData();
+      chatInput.value = "";
+      renderChatMessages();
+      renderChatList();
+    }
   };
 }
 
-// Dasturni ishga tushirish
-initApp();
+// Page Load - State Restoration
+document.addEventListener("DOMContentLoaded", () => {
+  updateUserNavUI();
+  checkBlockedState();
+
+  const savedTab = localStorage.getItem('mp_active_tab') || 'market';
+  switchTab(savedTab);
+});
