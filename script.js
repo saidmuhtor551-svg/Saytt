@@ -1,148 +1,49 @@
-// ==========================================
-// 1. BAZA VA MA'LUMOTLARNI YUKLASH
-// ==========================================
-let registeredUsers = JSON.parse(localStorage.getItem('mp_users')) || [
-  { username: "KOROL_988", pass: "said9800", role: "Владелец сайта", isBlocked: false },
-  { username: "Admin_Ali", pass: "ali1234", role: "Администратор", isBlocked: false },
-  { username: "SimpleUser", pass: "1234", role: "Пользователь", isBlocked: false }
-];
+window.addEventListener('firebase-ready', () => {
+  let currentUser = JSON.parse(localStorage.getItem('mp_current_user')) || null;
+  let products = [];
+  let registeredUsers = [];
+  let onlineUsers = [];
 
-let currentUser = JSON.parse(localStorage.getItem('mp_current_user')) || null;
-let activeChatPartner = null;
+  const marketGrid = document.getElementById("marketGrid");
+  const myProductsGrid = document.getElementById("myProductsGrid");
+  const sellForm = document.getElementById("sellForm");
+  const authModal = document.getElementById("authModal");
+  const openAuthModalBtn = document.getElementById("openAuthModalBtn");
+  const closeAuthModal = document.getElementById("closeAuthModal");
+  const logoutBtn = document.getElementById("logoutBtn");
+  const navUsername = document.getElementById("navUsername");
+  const adminPanel = document.getElementById("adminPanel");
+  const userRolesList = document.getElementById("userRolesList");
+  const onlineUsersList = document.getElementById("onlineUsersList");
 
-// Mahsulotlar ro'yxati (Barcha foydalanuvchilar uchun umumiy)
-let products = JSON.parse(localStorage.getItem('mp_products')) || [
-  {
-    id: 1,
-    seller: "KOROL_988",
-    title: "Тестовый Товар Владельца",
-    type: "image",
-    img: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=500",
-    desc: "Это пример товара, который видят все пользователи.",
-    secretData: "Логин: admin | Пароль: secret_pass",
-    passKey: "123"
+  function switchTab(tabName) {
+    document.querySelectorAll('.tab-content').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    if (tabName === 'market') {
+      document.getElementById('marketSection').classList.add('active');
+      document.getElementById('tabMarketBtn').classList.add('active');
+    } else if (tabName === 'add') {
+      document.getElementById('addSection').classList.add('active');
+      document.getElementById('tabAddBtn').classList.add('active');
+    } else if (tabName === 'profile') {
+      document.getElementById('profileSection').classList.add('active');
+      document.getElementById('tabProfileBtn').classList.add('active');
+      renderProfile();
+    }
   }
-];
 
-let chats = JSON.parse(localStorage.getItem('mp_chats')) || [];
+  document.getElementById('tabMarketBtn').onclick = () => switchTab('market');
+  document.getElementById('tabAddBtn').onclick = () => switchTab('add');
+  document.getElementById('tabProfileBtn').onclick = () => switchTab('profile');
 
-// Ma'lumotlarni xotirada saqlash funksiyasi
-function saveData() {
-  localStorage.setItem('mp_users', JSON.stringify(registeredUsers));
-  localStorage.setItem('mp_products', JSON.stringify(products));
-  localStorage.setItem('mp_chats', JSON.stringify(chats));
-  
-  if (currentUser) {
-    localStorage.setItem('mp_current_user', JSON.stringify(currentUser));
-  } else {
-    localStorage.removeItem('mp_current_user');
-  }
-}
+  openAuthModalBtn.onclick = () => authModal.style.display = "flex";
+  closeAuthModal.onclick = () => authModal.style.display = "none";
 
-// ==========================================
-// 2. DOM ELEMENTLARINI BOG'LASH
-// ==========================================
-const tabMarketBtn = document.getElementById("tabMarketBtn");
-const tabAddBtn = document.getElementById("tabAddBtn");
-const tabProfileBtn = document.getElementById("tabProfileBtn");
-const tabChatBtn = document.getElementById("tabChatBtn");
+  const showLoginBtn = document.getElementById("showLoginBtn");
+  const showRegisterBtn = document.getElementById("showRegisterBtn");
+  const loginForm = document.getElementById("loginForm");
+  const registerForm = document.getElementById("registerForm");
 
-const marketSection = document.getElementById("marketSection");
-const addSection = document.getElementById("addSection");
-const profileSection = document.getElementById("profileSection");
-const chatSection = document.getElementById("chatSection");
-
-const marketGrid = document.getElementById("marketGrid");
-const myProductsGrid = document.getElementById("myProductsGrid");
-const sellForm = document.getElementById("sellForm");
-
-const authModal = document.getElementById("authModal");
-const openAuthModalBtn = document.getElementById("openAuthModalBtn");
-const closeAuthModal = document.getElementById("closeAuthModal");
-
-const showLoginBtn = document.getElementById("showLoginBtn");
-const showRegisterBtn = document.getElementById("showRegisterBtn");
-const loginForm = document.getElementById("loginForm");
-const registerForm = document.getElementById("registerForm");
-
-const navUsername = document.getElementById("navUsername");
-const logoutBtn = document.getElementById("logoutBtn");
-const loginError = document.getElementById("loginError");
-const shareSiteBtn = document.getElementById("shareSiteBtn");
-
-const adminPanel = document.getElementById("adminPanel");
-const userRolesList = document.getElementById("userRolesList");
-const blockedOverlay = document.getElementById("blockedOverlay");
-const blockedLogoutBtn = document.getElementById("blockedLogoutBtn");
-
-// Havolani nusxalash
-if (shareSiteBtn) {
-  shareSiteBtn.onclick = () => {
-    const cleanUrl = window.location.origin + window.location.pathname;
-    navigator.clipboard.writeText(cleanUrl);
-    alert("Ссылка на сайт скопирована!\n" + cleanUrl);
-  };
-}
-
-// Bloklanganlik holatini tekshirish
-function checkBlockedState() {
-  if (currentUser && currentUser.isBlocked) {
-    blockedOverlay?.classList.remove("hidden");
-  } else {
-    blockedOverlay?.classList.add("hidden");
-  }
-}
-
-if (blockedLogoutBtn) {
-  blockedLogoutBtn.onclick = () => {
-    currentUser = null;
-    saveData();
-    checkBlockedState();
-    location.reload();
-  };
-}
-
-// ==========================================
-// 3. NAVIGATSIYA VA TACHLAR (TABS)
-// ==========================================
-function resetTabs() {
-  [marketSection, addSection, profileSection, chatSection].forEach(s => s?.classList.remove("active"));
-  [tabMarketBtn, tabAddBtn, tabProfileBtn, tabChatBtn].forEach(b => b?.classList.remove("active"));
-}
-
-function switchTab(tabName) {
-  resetTabs();
-  if (tabName === 'market') {
-    marketSection?.classList.add("active");
-    tabMarketBtn?.classList.add("active");
-    renderMarket();
-  } else if (tabName === 'add') {
-    addSection?.classList.add("active");
-    tabAddBtn?.classList.add("active");
-  } else if (tabName === 'profile') {
-    profileSection?.classList.add("active");
-    tabProfileBtn?.classList.add("active");
-    renderProfile();
-  } else if (tabName === 'chat') {
-    chatSection?.classList.add("active");
-    tabChatBtn?.classList.add("active");
-    renderChatList();
-  }
-  localStorage.setItem('mp_active_tab', tabName);
-}
-
-if (tabMarketBtn) tabMarketBtn.onclick = () => switchTab('market');
-if (tabAddBtn) tabAddBtn.onclick = () => switchTab('add');
-if (tabProfileBtn) tabProfileBtn.onclick = () => switchTab('profile');
-if (tabChatBtn) tabChatBtn.onclick = () => switchTab('chat');
-
-// ==========================================
-// 4. AUTENTIFIKATSIYA (KIRISH VA RO'YXATDAN O'TISH)
-// ==========================================
-if (openAuthModalBtn) openAuthModalBtn.onclick = () => authModal.style.display = "flex";
-if (closeAuthModal) closeAuthModal.onclick = () => authModal.style.display = "none";
-
-if (showLoginBtn && showRegisterBtn) {
   showLoginBtn.onclick = () => {
     showLoginBtn.classList.add("active"); showRegisterBtn.classList.remove("active");
     loginForm.classList.add("active"); registerForm.classList.remove("active");
@@ -151,95 +52,147 @@ if (showLoginBtn && showRegisterBtn) {
     showRegisterBtn.classList.add("active"); showLoginBtn.classList.remove("active");
     registerForm.classList.add("active"); loginForm.classList.remove("active");
   };
-}
 
-// Ro'yxatdan o'tish
-if (registerForm) {
-  registerForm.onsubmit = (e) => {
+  registerForm.onsubmit = async (e) => {
     e.preventDefault();
-    let u = document.getElementById("regUser").value.trim();
-    const preset = document.getElementById("presetNick")?.value || "";
+    const u = document.getElementById("regUser").value.trim();
     const p = document.getElementById("regPass").value.trim();
+    try {
+      let defaultRole = (u.toLowerCase() === "korol_988") ? "Владелец сайта" : "Пользователь";
 
-    if (preset) u = u + preset;
-
-    if (registeredUsers.some(user => user.username === u)) {
-      alert("Этот логин уже занят!");
-      return;
+      await window.addDoc(window.collection(window.db, "users"), { 
+        username: u, 
+        pass: p, 
+        role: defaultRole, 
+        isBlocked: false 
+      });
+      alert("Muvaffaqiyatli ro'yxatdan o'tdingiz!");
+      registerForm.reset();
+      showLoginBtn.click();
+    } catch (err) {
+      alert("Xatolik: " + err.message);
     }
-
-    const newUser = { username: u, pass: p, role: "Пользователь", isBlocked: false };
-    registeredUsers.push(newUser);
-    saveData();
-
-    alert(`Аккаунт успешно создан! Ваш логин: ${u}`);
-    registerForm.reset();
-    showLoginBtn.click();
   };
-}
 
-// Tizimga kirish
-if (loginForm) {
-  loginForm.onsubmit = (e) => {
+  loginForm.onsubmit = async (e) => {
     e.preventDefault();
     const u = document.getElementById("loginUser").value.trim();
     const p = document.getElementById("loginPass").value.trim();
+    try {
+      const querySnapshot = await window.getDocs(window.collection(window.db, "users"));
+      let found = null;
+      querySnapshot.forEach((docSnap) => {
+        let data = docSnap.data();
+        if (data.username === u && data.pass === p) {
+          found = { id: docSnap.id, ...data };
+        }
+      });
 
-    const userFound = registeredUsers.find(user => user.username === u && user.pass === p);
-
-    if (userFound) {
-      currentUser = userFound;
-      saveData();
-      checkBlockedState();
-
-      if (currentUser.isBlocked) return;
-
-      updateUserNavUI();
-      authModal.style.display = "none";
-      loginForm.reset();
-
-      alert(`Добро пожаловать, ${currentUser.username}!`);
-      renderMarket();
-      renderProfile();
-    } else {
-      if (loginError) loginError.classList.remove("hidden");
+      if (found) {
+        if (found.isBlocked) {
+          document.getElementById("loginError").textContent = "Sizning akkuntingiz bloklangan!";
+          document.getElementById("loginError").classList.remove("hidden");
+          return;
+        }
+        currentUser = found;
+        localStorage.setItem('mp_current_user', JSON.stringify(currentUser));
+        updateUserNavUI();
+        authModal.style.display = "none";
+        loginForm.reset();
+        alert(`Xush kelibsiz, ${currentUser.username}!`);
+        pingOnlineStatus();
+        renderProfile();
+      } else {
+        document.getElementById("loginError").textContent = "Xato login yoki parol!";
+        document.getElementById("loginError").classList.remove("hidden");
+      }
+    } catch (err) {
+      alert("Xatolik: " + err.message);
     }
   };
-}
 
-// Hisobdan chiqish
-if (logoutBtn) {
-  logoutBtn.onclick = () => {
+  logoutBtn.onclick = async () => {
+    if (currentUser) {
+      try {
+        await window.deleteDoc(window.doc(window.db, "online", currentUser.username));
+      } catch(err) {}
+    }
     currentUser = null;
-    saveData();
+    localStorage.removeItem('mp_current_user');
     updateUserNavUI();
-    checkBlockedState();
-    renderMarket();
     renderProfile();
   };
-}
 
-function updateUserNavUI() {
-  if (currentUser) {
-    navUsername.innerHTML = `<i class="fa-solid fa-circle-user"></i> ${currentUser.username}`;
-    openAuthModalBtn.classList.add("hidden");
-    logoutBtn.classList.remove("hidden");
-    if (loginError) loginError.classList.add("hidden");
-  } else {
-    navUsername.innerHTML = `<i class="fa-solid fa-circle-user"></i> Гость`;
-    openAuthModalBtn.classList.remove("hidden");
-    logoutBtn.classList.add("hidden");
+  function updateUserNavUI() {
+    if (currentUser) {
+      navUsername.innerHTML = `<i class="fa-solid fa-circle-user"></i> ${currentUser.username}`;
+      openAuthModalBtn.classList.add("hidden");
+      logoutBtn.classList.remove("hidden");
+    } else {
+      navUsername.innerHTML = `<i class="fa-solid fa-circle-user"></i> Гость`;
+      openAuthModalBtn.classList.remove("hidden");
+      logoutBtn.classList.add("hidden");
+    }
   }
-}
 
-// ==========================================
-// 5. MAHSULOT QO'SHISH VA KO'RSATISH
-// ==========================================
-if (sellForm) {
-  sellForm.onsubmit = (e) => {
+  async function pingOnlineStatus() {
+    if (!currentUser) return;
+    try {
+      await window.setDoc(window.doc(window.db, "online", currentUser.username), {
+        username: currentUser.username,
+        lastActive: Date.now()
+      });
+    } catch (err) {}
+  }
+
+  setInterval(pingOnlineStatus, 10000);
+
+  function listenOnlineUsers() {
+    window.onSnapshot(window.collection(window.db, "online"), (snapshot) => {
+      onlineUsers = [];
+      const now = Date.now();
+      snapshot.forEach((docSnap) => {
+        let data = docSnap.data();
+        if (now - data.lastActive < 30000) {
+          onlineUsers.push(data.username);
+        }
+      });
+      
+      if (onlineUsers.length === 0) {
+        onlineUsersList.textContent = "Hozircha hech kim yo'q (Faqat siz)";
+      } else {
+        onlineUsersList.innerHTML = onlineUsers.map(name => `<b>👤 ${name}</b>`).join(", ");
+      }
+    });
+  }
+
+  function listenUsersList() {
+    window.onSnapshot(window.collection(window.db, "users"), (snapshot) => {
+      registeredUsers = [];
+      snapshot.forEach((docSnap) => {
+        registeredUsers.push({ id: docSnap.id, ...docSnap.data() });
+      });
+      
+      if (currentUser) {
+        let freshMe = registeredUsers.find(u => u.id === currentUser.id);
+        if (freshMe) {
+          if (freshMe.isBlocked) {
+            alert("Sizning akkuntingiz ma'muriyat tomonidan bloklandi!");
+            logoutBtn.click();
+            return;
+          }
+          currentUser = freshMe;
+          localStorage.setItem('mp_current_user', JSON.stringify(currentUser));
+        }
+      }
+      renderProfile();
+    });
+  }
+
+  sellForm.onsubmit = async (e) => {
     e.preventDefault();
     if (!currentUser) {
-      alert("Для публикации товара необходимо войти в аккаунт!");
+      alert("Mahsulot qo'shish uchun oldin kiring!");
       authModal.style.display = "flex";
       return;
     }
@@ -251,353 +204,197 @@ if (sellForm) {
     const secretData = document.getElementById("prodSecretData").value.trim();
     const passKey = document.getElementById("prodSecretPassword").value.trim();
 
-    const newProd = {
-      id: Date.now(),
-      seller: currentUser.username,
-      title,
-      type,
-      img,
-      desc,
-      secretData,
-      passKey
-    };
-
-    products.unshift(newProd);
-    saveData();
-    alert("Товар успешно опубликован!");
-    sellForm.reset();
-    switchTab('market');
-  };
-}
-
-function renderMarket() {
-  if (!marketGrid) return;
-  marketGrid.innerHTML = "";
-
-  products = JSON.parse(localStorage.getItem('mp_products')) || [];
-
-  if (products.length === 0) {
-    marketGrid.innerHTML = "<p style='color:#9ca3af; grid-column: 1/-1; text-align: center; padding: 40px;'>Товаров пока нет. Вы можете добавить первый товар!</p>";
-    return;
-  }
-
-  const canDelete = currentUser && (currentUser.role === "Администратор" || currentUser.role === "Владелец сайта");
-
-  products.forEach((p) => {
-    const card = document.createElement("div");
-    card.className = "card-item card";
-
-    let mediaHTML = p.type === "image"
-      ? `<img src="${p.img}" alt="${p.title}">`
-      : `<div class="text-type-badge"><i class="fa-solid fa-file-lines"></i> Текстовый Товар</div>`;
-
-    let deleteBtnHTML = canDelete ? `
-      <button class="btn btn-danger" style="padding: 4px 8px; font-size: 0.75rem; margin-left: 5px;" onclick="deleteProduct(${p.id})">
-        <i class="fa-solid fa-trash"></i> Удалить
-      </button>
-    ` : '';
-
-    card.innerHTML = `
-      ${mediaHTML}
-      <div class="card-body">
-        <div>
-          <div class="seller-info">
-            <span><i class="fa-solid fa-user-tag"></i> <b>${p.seller}</b></span>
-            <div>
-              <button class="btn btn-warning" style="padding: 4px 8px; font-size: 0.75rem;" onclick="openChatWithSeller('${p.seller}')">
-                <i class="fa-solid fa-paper-plane"></i> Чат
-              </button>
-              ${deleteBtnHTML}
-            </div>
-          </div>
-          <h3>${p.title}</h3>
-          <p>${p.desc}</p>
-        </div>
-        
-        <div class="access-zone">
-          <label style="font-size: 0.8rem; color:#9ca3af;">Введите пароль для просмотра контента:</label>
-          <div style="display:flex; gap:5px; margin-top:4px;">
-            <input type="password" id="passInput_${p.id}" placeholder="Пароль">
-            <button class="btn btn-primary" onclick="unlockSecret(${p.id})">Открыть</button>
-          </div>
-          <div id="secretResult_${p.id}" class="hidden"></div>
-        </div>
-      </div>
-    `;
-    marketGrid.appendChild(card);
-  });
-}
-
-window.deleteProduct = function(id) {
-  if (confirm("Вы действительно хотите удалить этот товар?")) {
-    products = products.filter(p => p.id !== id);
-    saveData();
-    alert("Товар успешно удален!");
-    renderMarket();
-  }
-};
-
-window.unlockSecret = function(id) {
-  const prod = products.find(p => p.id === id);
-  const inputEl = document.getElementById(`passInput_${id}`);
-  const resDiv = document.getElementById(`secretResult_${id}`);
-
-  if (inputEl && prod && inputEl.value.trim() === prod.passKey) {
-    resDiv.className = "unlocked-data";
-    resDiv.innerHTML = `<i class="fa-solid fa-lock-open"></i> <b>Секретная информация:</b><br>${prod.secretData}`;
-  } else {
-    alert("Неверный пароль!");
-  }
-};
-
-// ==========================================
-// 6. PROFIL VA ADMIN PANEL
-// ==========================================
-function renderProfile() {
-  const profName = document.getElementById("profName");
-  const profRoleBadge = document.getElementById("profRoleBadge");
-
-  if (!currentUser) {
-    if (profName) profName.textContent = "Гость";
-    if (profRoleBadge) {
-      profRoleBadge.textContent = "Вы не авторизованы";
-      profRoleBadge.className = "role-tag role-user";
+    try {
+      await window.addDoc(window.collection(window.db, "products"), {
+        seller: currentUser.username,
+        title, type, img, desc, secretData, passKey,
+        createdAt: Date.now()
+      });
+      alert("Mahsulot onlayn bazaga qo'shildi!");
+      sellForm.reset();
+      switchTab('market');
+    } catch (err) {
+      alert("Xatolik: " + err.message);
     }
-    if (adminPanel) adminPanel.classList.add("hidden");
-    if (myProductsGrid) myProductsGrid.innerHTML = "<p style='color:#9ca3af;'>Вы не вошли в систему.</p>";
-    return;
+  };
+
+  function listenProducts() {
+    window.onSnapshot(window.collection(window.db, "products"), (snapshot) => {
+      products = [];
+      snapshot.forEach((docSnap) => {
+        products.push({ id: docSnap.id, ...docSnap.data() });
+      });
+      renderMarket();
+      if (currentUser) renderProfile();
+    });
   }
 
-  if (profName) profName.textContent = currentUser.username;
+  function renderMarket() {
+    marketGrid.innerHTML = "";
+    if (products.length === 0) {
+      marketGrid.innerHTML = "<p style='color:#9ca3af; grid-column: 1/-1; text-align: center; padding: 40px;'>Hozircha onlayn mahsulotlar yo'q.</p>";
+      return;
+    }
 
-  if (profRoleBadge) {
-    profRoleBadge.textContent = currentUser.role;
-    if (currentUser.role === "Владелец сайта") profRoleBadge.className = "role-tag role-owner";
-    else if (currentUser.role === "Администратор") profRoleBadge.className = "role-tag role-admin";
-    else profRoleBadge.className = "role-tag role-user";
+    const canDeleteAny = currentUser && (currentUser.role === "Администратор" || currentUser.role === "Владелец сайта");
+
+    products.forEach((p) => {
+      const card = document.createElement("div");
+      card.className = "card-item";
+      let mediaHTML = p.type === "image" ? `<img src="${p.img}" alt="${p.title}">` : `<div class="text-type-badge"><i class="fa-solid fa-file-lines"></i> Matnli mahsulot</div>`;
+      let deleteBtn = (canDeleteAny || (currentUser && currentUser.username === p.seller)) ? `<button class="btn btn-danger" style="padding: 2px 6px; font-size: 0.7rem;" onclick="window.deleteProduct('${p.id}')">O'chirish</button>` : '';
+
+      card.innerHTML = `
+        ${mediaHTML}
+        <div class="card-body">
+          <div>
+            <div class="seller-info">
+              <span>Sotuvchi: <b>${p.seller}</b></span>
+              ${deleteBtn}
+            </div>
+            <h3>${p.title}</h3>
+            <p>${p.desc}</p>
+          </div>
+          <div class="access-zone">
+            <label style="font-size: 0.8rem; color:#9ca3af;">Parolni kiriting:</label>
+            <div style="display:flex; gap:5px; margin-top:4px;">
+              <input type="password" id="passInput_${p.id}" placeholder="Parol">
+              <button class="btn btn-primary" onclick="window.unlockSecret('${p.id}', '${p.passKey}', '${p.secretData}')">Ochish</button>
+            </div>
+            <div id="secretResult_${p.id}" class="hidden"></div>
+          </div>
+        </div>
+      `;
+      marketGrid.appendChild(card);
+    });
   }
 
-  if (currentUser.role === "Владелец сайта" || currentUser.role === "Администратор") {
-    if (adminPanel) adminPanel.classList.remove("hidden");
-    renderAdminUserList();
-  } else {
-    if (adminPanel) adminPanel.classList.add("hidden");
-  }
+  window.unlockSecret = function(id, realPass, secret) {
+    const inputVal = document.getElementById(`passInput_${id}`).value.trim();
+    const resDiv = document.getElementById(`secretResult_${id}`);
+    if (inputVal === realPass) {
+      resDiv.className = "unlocked-data";
+      resDiv.innerHTML = `<b>Maxfiy ma'lumot:</b><br>${secret}`;
+    } else {
+      alert("Parol noto'g'ri!");
+    }
+  };
 
-  if (myProductsGrid) {
+  function renderProfile() {
+    const profName = document.getElementById("profName");
+    const profRoleBadge = document.getElementById("profRoleBadge");
+    
+    if (!currentUser) {
+      profName.textContent = "Гость";
+      profRoleBadge.textContent = "Tizimda emassiz";
+      adminPanel.classList.add("hidden");
+      myProductsGrid.innerHTML = "<p style='color:#9ca3af;'>Tizimga kiring.</p>";
+      return;
+    }
+
+    profName.textContent = currentUser.username;
+    profRoleBadge.textContent = currentUser.role || "Foydalanuvchi";
+    profRoleBadge.className = currentUser.role === "Владелец сайта" ? "role-tag role-owner" : (currentUser.role === "Администратор" ? "role-tag role-admin" : "role-tag role-user");
+
+    if (currentUser.role === "Владелец сайта" || currentUser.role === "Администратор") {
+      adminPanel.classList.remove("hidden");
+      renderAdminUsersList();
+    } else {
+      adminPanel.classList.add("hidden");
+    }
+
     myProductsGrid.innerHTML = "";
     const myProds = products.filter(p => p.seller === currentUser.username);
     if (myProds.length === 0) {
-      myProductsGrid.innerHTML = "<p style='color:#9ca3af;'>Вы еще не выставили ни одного товара.</p>";
-    } else {
-      myProds.forEach(p => {
-        const card = document.createElement("div");
-        card.className = "card-item card";
-        card.innerHTML = `
-          <div class="card-body">
-            <h3>${p.title}</h3>
-            <p>${p.desc}</p>
-            <p style="font-size:0.85rem; color:#f59e0b;">Ваш пароль к товару: <b>${p.passKey}</b></p>
-          </div>
-        `;
-        myProductsGrid.appendChild(card);
-      });
-    }
-  }
-}
-
-function renderAdminUserList() {
-  if (!userRolesList) return;
-  userRolesList.innerHTML = "";
-
-  registeredUsers = JSON.parse(localStorage.getItem('mp_users')) || [];
-  const isOwner = currentUser && currentUser.role === "Владелец сайта";
-
-  registeredUsers.forEach(u => {
-    if (currentUser && u.username === currentUser.username) return;
-
-    const row = document.createElement("div");
-    row.className = "user-role-row";
-
-    let blockBtn = u.isBlocked 
-      ? `<button class="btn btn-success" style="padding:4px 8px; font-size:0.8rem;" onclick="toggleBlockUser('${u.username}')">Разблокировать</button>`
-      : `<button class="btn btn-danger" style="padding:4px 8px; font-size:0.8rem;" onclick="toggleBlockUser('${u.username}')">Заблокировать</button>`;
-
-    let roleActionBtns = "";
-    if (isOwner) {
-      if (u.role === "Администратор") {
-        roleActionBtns = `<button class="btn btn-warning" style="padding:4px 8px; font-size:0.8rem;" onclick="changeRole('${u.username}', 'Пользователь')">Снять Админа</button>`;
-      } else if (u.role === "Пользователь") {
-        roleActionBtns = `<button class="btn btn-primary" style="padding:4px 8px; font-size:0.8rem;" onclick="changeRole('${u.username}', 'Администратор')">Сделать Админом</button>`;
-      }
-    }
-
-    let roleBadgeClass = u.role === "Владелец сайта" ? "role-owner" : (u.role === "Администратор" ? "role-admin" : "role-user");
-
-    row.innerHTML = `
-      <div style="display:flex; align-items:center; gap:8px;">
-        <i class="fa-solid fa-user" style="color:#94a3b8;"></i>
-        <b style="color:#f8fafc;">${u.username}</b> 
-        <span class="role-tag ${roleBadgeClass}">${u.role}</span>
-        ${u.isBlocked ? '<b style="color:#ef4444; font-size:0.8rem;">[ЗАБЛОКИРОВАН]</b>' : ''}
-      </div>
-      <div style="display:flex; gap:5px; align-items:center;">
-        ${roleActionBtns}
-        ${blockBtn}
-      </div>
-    `;
-    userRolesList.appendChild(row);
-  });
-}
-
-window.changeRole = function(username, newRole) {
-  if (!currentUser || currentUser.role !== "Владелец сайта") {
-    alert("Только Владелец сайта может назначать или снимать Администраторов!");
-    return;
-  }
-  const targetUser = registeredUsers.find(u => u.username === username);
-  if (targetUser) {
-    targetUser.role = newRole;
-    saveData();
-    alert(`Пользователю ${username} присвоена роль: ${newRole}`);
-    renderProfile();
-  }
-};
-
-window.toggleBlockUser = function(username) {
-  const targetUser = registeredUsers.find(u => u.username === username);
-  if (targetUser) {
-    if (targetUser.role === "Владелец сайта") {
-      alert("Нельзя заблокировать Владельца сайта!");
+      myProductsGrid.innerHTML = "<p style='color:#9ca3af;'>Siz hali mahsulot qo'shmagansiz.</p>";
       return;
     }
-    targetUser.isBlocked = !targetUser.isBlocked;
-    saveData();
-    alert(`Пользователь ${username} ${targetUser.isBlocked ? 'заблокирован' : 'разблокирован'}!`);
-    renderAdminUserList();
-  }
-};
-
-// ==========================================
-// 7. CHAT TIZIMI
-// ==========================================
-window.openChatWithSeller = function(sellerName) {
-  if (!currentUser) {
-    alert("Для общения с продавцом необходимо войти в аккаунт!");
-    authModal.style.display = "flex";
-    return;
-  }
-  if (currentUser.username === sellerName) {
-    alert("Вы не можете написать самому себе!");
-    return;
-  }
-  activeChatPartner = sellerName;
-  switchTab('chat');
-  renderChatMessages();
-};
-
-function renderChatList() {
-  const chatUsersList = document.getElementById("chatUsersList");
-  if (!chatUsersList) return;
-  chatUsersList.innerHTML = "";
-
-  if (!currentUser) {
-    chatUsersList.innerHTML = "<p style='color:#64748b; font-size:0.8rem;'>Войдите в аккаунт</p>";
-    return;
+    myProds.forEach(p => {
+      const card = document.createElement("div");
+      card.className = "card-item";
+      card.innerHTML = `
+        <div class="card-body">
+          <h3>${p.title}</h3>
+          <p>${p.desc}</p>
+          <p style="color:#f59e0b; font-size:0.85rem;">Sizning parolingiz: <b>${p.passKey}</b></p>
+          <button class="btn btn-danger" style="margin-top:8px; font-size:0.75rem;" onclick="window.deleteProduct('${p.id}')">O'chirish</button>
+        </div>
+      `;
+      myProductsGrid.appendChild(card);
+    });
   }
 
-  const userPartners = new Set();
-  chats.forEach(c => {
-    if (c.sender === currentUser.username) userPartners.add(c.receiver);
-    if (c.receiver === currentUser.username) userPartners.add(c.sender);
-  });
+  function renderAdminUsersList() {
+    userRolesList.innerHTML = "";
+    const isOwner = currentUser.role === "Владелец сайта";
 
-  if (userPartners.size === 0) {
-    chatUsersList.innerHTML = "<p style='color:#64748b; font-size:0.8rem;'>Чатов пока нет</p>";
-    return;
+    registeredUsers.forEach(u => {
+      if (u.username === currentUser.username) return;
+      
+      const row = document.createElement("div");
+      row.className = "user-role-row";
+
+      let blockBtnText = u.isBlocked ? "Banddan chiqarish" : "Bloklash";
+      let blockBtnColor = u.isBlocked ? "btn-success" : "btn-danger";
+
+      let actionButtons = `<button class="btn ${blockBtnColor}" style="font-size:0.7rem; padding:4px 8px;" onclick="window.toggleBlockUser('${u.id}', ${!u.isBlocked})">${blockBtnText}</button>`;
+
+      if (isOwner) {
+        if (u.role === "Администратор") {
+          actionButtons += ` <button class="btn btn-warning" style="font-size:0.7rem; padding:4px 8px;" onclick="window.changeUserRole('${u.id}', 'Пользователь')">Adminlikni olish</button>`;
+        } else if (u.role === "Пользователь") {
+          actionButtons += ` <button class="btn btn-primary" style="font-size:0.7rem; padding:4px 8px;" onclick="window.changeUserRole('${u.id}', 'Администратор')">Admin qilish</button>`;
+        }
+      }
+
+      row.innerHTML = `
+        <div>
+          <b>${u.username}</b> <span class="role-tag">${u.role}</span>
+          ${u.isBlocked ? '<span style="color:var(--danger); font-size:0.75rem; margin-left:6px;">[Bloklangan]</span>' : ''}
+        </div>
+        <div style="display:flex; gap:4px;">${actionButtons}</div>
+      `;
+      userRolesList.appendChild(row);
+    });
   }
 
-  userPartners.forEach(partner => {
-    const btn = document.createElement("button");
-    btn.className = `chat-user-btn ${activeChatPartner === partner ? 'active' : ''}`;
-    btn.innerHTML = `<i class="fa-solid fa-user"></i> ${partner}`;
-    btn.onclick = () => {
-      activeChatPartner = partner;
-      renderChatList();
-      renderChatMessages();
-    };
-    chatUsersList.appendChild(btn);
-  });
-}
-
-function renderChatMessages() {
-  const chatHeader = document.getElementById("chatHeader");
-  const chatMessages = document.getElementById("chatMessages");
-  const chatInput = document.getElementById("chatInput");
-  const sendMsgBtn = document.getElementById("sendMsgBtn");
-
-  if (!activeChatPartner || !currentUser) {
-    if (chatHeader) chatHeader.textContent = "Выберите собеседника";
-    if (chatMessages) chatMessages.innerHTML = "<div class='empty-chat-msg'>Выберите чат из списка</div>";
-    if (chatInput) chatInput.disabled = true;
-    if (sendMsgBtn) sendMsgBtn.disabled = true;
-    return;
-  }
-
-  if (chatHeader) chatHeader.textContent = `Чат с ${activeChatPartner}`;
-  if (chatInput) chatInput.disabled = false;
-  if (sendMsgBtn) sendMsgBtn.disabled = false;
-
-  const activeMsgs = chats.filter(c => 
-    (c.sender === currentUser.username && c.receiver === activeChatPartner) ||
-    (c.sender === activeChatPartner && c.receiver === currentUser.username)
-  );
-
-  if (chatMessages) {
-    chatMessages.innerHTML = "";
-    if (activeMsgs.length === 0) {
-      chatMessages.innerHTML = "<div class='empty-chat-msg'>Напишите первое сообщение...</div>";
-    } else {
-      activeMsgs.forEach(m => {
-        const bubble = document.createElement("div");
-        bubble.className = `msg-bubble ${m.sender === currentUser.username ? 'msg-me' : 'msg-other'}`;
-        bubble.textContent = m.text;
-        chatMessages.appendChild(bubble);
-      });
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-  }
-}
-
-const chatForm = document.getElementById("chatForm");
-if (chatForm) {
-  chatForm.onsubmit = (e) => {
-    e.preventDefault();
-    const chatInput = document.getElementById("chatInput");
-    const text = chatInput.value.trim();
-
-    if (text && currentUser && activeChatPartner) {
-      chats.push({
-        sender: currentUser.username,
-        receiver: activeChatPartner,
-        text
-      });
-      saveData();
-      chatInput.value = "";
-      renderChatMessages();
-      renderChatList();
+  window.toggleBlockUser = async function(userId, blockStatus) {
+    try {
+      await window.updateDoc(window.doc(window.db, "users", userId), { isBlocked: blockStatus });
+      alert(blockStatus ? "Foydalanuvchi bloklandi!" : "Foydalanuvchi blokdan chiqarildi!");
+    } catch (err) {
+      alert("Xatolik: " + err.message);
     }
   };
-}
 
-// ==========================================
-// 8. BOSHLANG'ICH ISHGA TUSHIRISH
-// ==========================================
-document.addEventListener("DOMContentLoaded", () => {
-  saveData();
+  window.changeUserRole = async function(userId, newRole) {
+    try {
+      await window.updateDoc(window.doc(window.db, "users", userId), { role: newRole });
+      alert("Foydalanuvchi roli o'zgartirildi: " + newRole);
+    } catch (err) {
+      alert("Xatolik: " + err.message);
+    }
+  };
+
+  window.deleteProduct = async function(id) {
+    if (confirm("Mahsulotni o'chirishni xohlaysizmi?")) {
+      try {
+        await window.deleteDoc(window.doc(window.db, "products", id));
+        alert("O'chirildi!");
+      } catch (err) {
+        alert("Xatolik: " + err.message);
+      }
+    }
+  };
+
+  document.getElementById("shareSiteBtn").onclick = () => {
+    navigator.clipboard.writeText(window.location.href);
+    alert("Havola nusxalandi!");
+  };
+
   updateUserNavUI();
-  checkBlockedState();
-
-  const savedTab = localStorage.getItem('mp_active_tab') || 'market';
-  switchTab(savedTab);
+  if (currentUser) pingOnlineStatus();
+  listenOnlineUsers();
+  listenUsersList();
+  listenProducts();
 });
