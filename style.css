@@ -1,308 +1,588 @@
-// LocalStorage Baza bilan ishlash
-let users = JSON.parse(localStorage.getItem('users_db')) || [
-  { username: 'admin', pass: 'admin123', role: 'owner', coins: 1000, isBlocked: false }
-];
-
-let products = JSON.parse(localStorage.getItem('products_db')) || [];
-let currentUser = JSON.parse(localStorage.getItem('current_user')) || null;
-
-// Saqlash funksiyasi
-function saveData() {
-  localStorage.setItem('users_db', JSON.stringify(users));
-  localStorage.setItem('products_db', JSON.stringify(products));
-  if (currentUser) {
-    localStorage.setItem('current_user', JSON.stringify(currentUser));
-  } else {
-    localStorage.removeItem('current_user');
-  }
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-// Sahifa yuklanganda ishga tushadigan qism
-document.addEventListener('DOMContentLoaded', () => {
-  initApp();
-  setupTabs();
-  setupAuth();
-  setupProductForm();
-  renderProducts();
-});
-
-function initApp() {
-  if (currentUser) {
-    // Joriy foydalanuvchini yangilash
-    const updated = users.find(u => u.username === currentUser.username);
-    if (updated) currentUser = updated;
-    
-    if (currentUser.isBlocked) {
-      document.getElementById('blockedOverlay').classList.remove('hidden');
-    } else {
-      document.getElementById('navUsername').innerHTML = `<i class="fa-solid fa-circle-user"></i> ${currentUser.username}`;
-      document.getElementById('openAuthModalBtn').classList.add('hidden');
-      document.getElementById('logoutBtn').classList.remove('hidden');
-      document.getElementById('navCoins').classList.remove('hidden');
-      document.getElementById('userCoinsCount').innerText = currentUser.coins || 0;
-    }
-  }
-  renderAdminPanel();
+body {
+  background-color: #0f172a;
+  color: #f8fafc;
+  min-height: 100vh;
+  padding-bottom: 70px; /* Mobil menyu uchun joy */
 }
 
-// Navigatsiya (Tablar)
-function setupTabs() {
-  const tabs = {
-    tabMarketBtn: 'marketSection',
-    tabKeysBtn: 'keysSection',
-    tabAddBtn: 'addSection',
-    tabChatBtn: 'chatSection',
-    tabProfileBtn: 'profileSection'
-  };
-
-  Object.keys(tabs).forEach(btnId => {
-    document.getElementById(btnId).addEventListener('click', () => {
-      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-      
-      document.getElementById(btnId).classList.add('active');
-      document.getElementById(tabs[btnId]).classList.add('active');
-    });
-  });
+.hidden {
+  display: none !important;
 }
 
-// Auth Sistemasi
-function setupAuth() {
-  const modal = document.getElementById('authModal');
-  document.getElementById('openAuthModalBtn').onclick = () => modal.style.display = 'flex';
-  document.getElementById('closeAuthModal').onclick = () => modal.style.display = 'none';
-
-  // Login
-  document.getElementById('loginForm').onsubmit = (e) => {
-    e.preventDefault();
-    const u = document.getElementById('loginUser').value;
-    const p = document.getElementById('loginPass').value;
-
-    const user = users.find(x => x.username === u && x.pass === p);
-    if (user) {
-      currentUser = user;
-      saveData();
-      location.reload(); // Sahifani yangilash va avto-login qilish
-    } else {
-      document.getElementById('loginError').classList.remove('hidden');
-    }
-  };
-
-  // Register
-  document.getElementById('registerForm').onsubmit = (e) => {
-    e.preventDefault();
-    const u = document.getElementById('regUser').value;
-    const p = document.getElementById('regPass').value;
-
-    if (users.some(x => x.username === u)) {
-      alert('Bunday foydalanuvchi mavjud!');
-      return;
-    }
-
-    const newUser = { username: u, pass: p, role: 'user', coins: 0, isBlocked: false };
-    users.push(newUser);
-    currentUser = newUser;
-    saveData();
-    location.reload();
-  };
-
-  // Logout
-  document.getElementById('logoutBtn').onclick = () => {
-    currentUser = null;
-    saveData();
-    location.reload();
-  };
-
-  document.getElementById('blockedLogoutBtn').onclick = () => {
-    currentUser = null;
-    saveData();
-    location.reload();
-  };
+/* Navbar (Kompyuter va umumiy stil) */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #1e293b;
+  padding: 12px 20px;
+  border-bottom: 1px solid #334155;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
-// Tovar joylash formasi
-function setupProductForm() {
-  const categorySelect = document.getElementById('prodCategory');
-  categorySelect.addEventListener('change', () => {
-    if (categorySelect.value === 'key') {
-      document.getElementById('priceGroup').style.display = 'block';
-      document.getElementById('passGroup').style.display = 'none';
-    } else {
-      document.getElementById('priceGroup').style.display = 'none';
-      document.getElementById('passGroup').style.display = 'block';
-    }
-  });
-
-  document.getElementById('sellForm').onsubmit = (e) => {
-    e.preventDefault();
-    if (!currentUser) return alert('Avval akkauntga kiring!');
-
-    const newProd = {
-      id: Date.now(),
-      seller: currentUser.username,
-      category: document.getElementById('prodCategory').value,
-      title: document.getElementById('prodTitle').value,
-      price: parseInt(document.getElementById('prodPrice').value) || 0,
-      img: document.getElementById('prodImgUrl').value || 'https://via.placeholder.com/300x180',
-      desc: document.getElementById('prodDesc').value,
-      secret: document.getElementById('prodSecretData').value,
-      pass: document.getElementById('prodSecretPassword').value,
-      buyers: []
-    };
-
-    products.push(newProd);
-    saveData();
-    alert('Eʼlon joylashtirildi!');
-    renderProducts();
-    document.getElementById('sellForm').reset();
-  };
+.logo {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: #38bdf8;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-// Tovarlarni ekranga chiqarish
-function renderProducts() {
-  const marketGrid = document.getElementById('marketGrid');
-  const keysGrid = document.getElementById('keysGrid');
-  const myProductsGrid = document.getElementById('myProductsGrid');
-
-  marketGrid.innerHTML = '';
-  keysGrid.innerHTML = '';
-  myProductsGrid.innerHTML = '';
-
-  products.forEach(p => {
-    const isOwner = currentUser && (currentUser.username === p.seller || currentUser.role === 'owner' || currentUser.role === 'admin');
-    const hasBought = currentUser && p.buyers.includes(currentUser.username);
-
-    let cardHtml = `
-      <div class="card">
-        <img src="${p.img}" alt="img">
-        <div class="card-body">
-          <div class="seller-info">Sotuvchi: <b>${p.seller}</b></div>
-          <h3>${p.title}</h3>
-          <p>${p.desc}</p>
-    `;
-
-    // AGAR KLUCHLAR MARKETI BO'LSA
-    if (p.category === 'key') {
-      cardHtml += `<div style="color:#f59e0b; font-weight:bold; margin-bottom:10px;"><i class="fa-solid fa-coins"></i> Narxi: ${p.price} Koin</div>`;
-
-      if (hasBought || isOwner) {
-        cardHtml += `<div class="unlocked-data"><b>Kalit:</b> ${p.secret}</div>`;
-      } else {
-        cardHtml += `<button onclick="buyKey(${p.id})" class="btn btn-warning btn-block"><i class="fa-solid fa-cart-shopping"></i> Koin bilan sotib olish</button>`;
-      }
-    } 
-    // AGAR ODDIY MARKET BO'LSA
-    else {
-      cardHtml += `
-        <div class="access-zone">
-          <input type="password" id="pass_${p.id}" placeholder="Parolni kiriting">
-          <button onclick="unlockProduct(${p.id})" class="btn btn-primary btn-block" style="margin-top:5px;">Ochish</button>
-          <div id="secret_${p.id}" class="unlocked-data hidden"></div>
-        </div>
-      `;
-    }
-
-    cardHtml += `</div></div>`;
-
-    if (p.category === 'key') {
-      keysGrid.innerHTML += cardHtml;
-    } else {
-      marketGrid.innerHTML += cardHtml;
-    }
-
-    if (currentUser && p.seller === currentUser.username) {
-      myProductsGrid.innerHTML += cardHtml;
-    }
-  });
+.nav-links {
+  display: flex;
+  gap: 8px;
 }
 
-// Kalitni Koin evaziga sotib olish mantiqi
-window.buyKey = function(prodId) {
-  if (!currentUser) return alert('Avval tizimga kiring!');
-
-  const prod = products.find(p => p.id === prodId);
-  if (!prod) return;
-
-  if (currentUser.coins < prod.price) {
-    return alert('Tangalaringiz yetarli emas! Admindan Koin soʻrang.');
-  }
-
-  // Hisob-kitob qilish
-  currentUser.coins -= prod.price;
-  
-  // Sotuvchining balansiga tangani o'tkazish
-  const seller = users.find(u => u.username === prod.seller);
-  if (seller) {
-    seller.coins = (seller.coins || 0) + prod.price;
-  }
-
-  prod.buyers.push(currentUser.username);
-  saveData();
-  alert('Kalit muvaffaqiyatli sotib olindi!');
-  initApp();
-  renderProducts();
-};
-
-// Oddiy parolli mahsulotni ochish
-window.unlockProduct = function(prodId) {
-  const inputPass = document.getElementById(`pass_${prodId}`).value;
-  const prod = products.find(p => p.id === prodId);
-
-  if (inputPass === prod.pass) {
-    const secretBox = document.getElementById(`secret_${prodId}`);
-    secretBox.innerHTML = `<b>Ma'lumot:</b> ${prod.secret}`;
-    secretBox.classList.remove('hidden');
-  } else {
-    alert('Parol notoʻgʻri!');
-  }
-};
-
-// ADMIN PANEL: Koin berish va Bloklash
-function renderAdminPanel() {
-  if (!currentUser || (currentUser.role !== 'owner' && currentUser.role !== 'admin')) return;
-
-  const adminPanel = document.getElementById('adminPanel');
-  const userRolesList = document.getElementById('userRolesList');
-  adminPanel.classList.remove('hidden');
-  userRolesList.innerHTML = '';
-
-  users.forEach(u => {
-    if (u.username === currentUser.username) return;
-
-    userRolesList.innerHTML += `
-      <div class="user-role-row">
-        <span><b>${u.username}</b> (${u.coins || 0} koin)</span>
-        <div style="display:flex; gap:5px;">
-          <button onclick="addCoins('${u.username}')" class="btn btn-warning" style="padding:2px 6px;">+Koin</button>
-          <button onclick="toggleBlock('${u.username}')" class="btn ${u.isBlocked ? 'btn-success' : 'btn-danger'}" style="padding:2px 6px;">
-            ${u.isBlocked ? 'Unblock' : 'Block'}
-          </button>
-        </div>
-      </div>
-    `;
-  });
+.nav-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-// Adminga koin qo'shish imkoniyati
-window.addCoins = function(username) {
-  const amount = prompt(`${username} ga qancha koin qo'shmoqchisiz?`);
-  if (amount && !isNaN(amount)) {
-    const user = users.find(u => u.username === username);
-    if (user) {
-      user.coins = (user.coins || 0) + parseInt(amount);
-      saveData();
-      renderAdminPanel();
-      alert('Koinlar berildi!');
-    }
-  }
-};
+.nav-btn:hover, .nav-btn.active {
+  background-color: #334155;
+  color: #38bdf8;
+}
 
-// Foydalanuvchini bloklash
-window.toggleBlock = function(username) {
-  const user = users.find(u => u.username === username);
-  if (user) {
-    user.isBlocked = !user.isBlocked;
-    saveData();
-    renderAdminPanel();
+.user-auth-zone {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-display {
+  font-weight: 600;
+  color: #cbd5e1;
+  font-size: 0.85rem;
+}
+
+/* Container & Sections */
+.container {
+  max-width: 1100px;
+  margin: 20px auto;
+  padding: 0 15px;
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.section-header h2 {
+  font-size: 1.2rem;
+}
+
+/* Cards & Grid */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 15px;
+}
+
+.card {
+  background-color: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+}
+
+.card img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+}
+
+.text-type-badge {
+  background: #6366f1;
+  color: #fff;
+  padding: 20px;
+  text-align: center;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.card-body {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex: 1;
+}
+
+.seller-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  color: #38bdf8;
+  margin-bottom: 8px;
+}
+
+.card h3 {
+  margin-bottom: 6px;
+  font-size: 1.1rem;
+}
+
+.card p {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  margin-bottom: 12px;
+}
+
+.access-zone {
+  border-top: 1px solid #334155;
+  padding-top: 8px;
+  margin-top: 8px;
+}
+
+.access-zone input {
+  flex: 1;
+  background-color: #0f172a;
+  border: 1px solid #334155;
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+.unlocked-data {
+  margin-top: 8px;
+  padding: 8px;
+  background-color: #064e3b;
+  border: 1px solid #10b981;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  color: #a7f3d0;
+  word-break: break-all;
+}
+
+/* Buttons */
+.btn {
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: background 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.btn-primary { background-color: #0284c7; color: #fff; }
+.btn-primary:hover { background-color: #0369a1; }
+.btn-secondary { background-color: #334155; color: #fff; }
+.btn-secondary:hover { background-color: #475569; }
+.btn-danger { background-color: #dc2626; color: #fff; }
+.btn-danger:hover { background-color: #b91c1c; }
+.btn-warning { background-color: #d97706; color: #fff; }
+.btn-warning:hover { background-color: #b45309; }
+.btn-success { background-color: #16a34a; color: #fff; }
+.btn-success:hover { background-color: #15803d; }
+.btn-block { width: 100%; }
+
+/* Forms */
+.form-card {
+  background-color: #1e293b;
+  padding: 20px;
+  border-radius: 12px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.form-group {
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.form-group label {
+  font-size: 0.85rem;
+  color: #cbd5e1;
+}
+
+.form-group input, .form-group select, .form-group textarea {
+  background-color: #0f172a;
+  border: 1px solid #334155;
+  color: #fff;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.secret-group {
+  background: #172554;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px dashed #3b82f6;
+}
+
+/* Chat Container */
+.chat-container {
+  display: flex;
+  height: 70vh;
+  background: #1e293b;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #334155;
+}
+
+.chat-sidebar {
+  width: 200px;
+  background: #0f172a;
+  padding: 10px;
+  border-right: 1px solid #334155;
+  overflow-y: auto;
+}
+
+.chat-sidebar h3 {
+  margin-bottom: 10px;
+  font-size: 0.9rem;
+  color: #94a3b8;
+}
+
+.chat-user-btn {
+  width: 100%;
+  text-align: left;
+  padding: 8px;
+  background: transparent;
+  border: none;
+  color: #cbd5e1;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-bottom: 4px;
+  font-size: 0.85rem;
+}
+
+.chat-user-btn:hover, .chat-user-btn.active {
+  background: #334155;
+  color: #38bdf8;
+}
+
+.chat-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-header {
+  padding: 10px 15px;
+  background: #1e293b;
+  border-bottom: 1px solid #334155;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.chat-messages {
+  flex: 1;
+  padding: 10px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.msg-bubble {
+  max-width: 80%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+.msg-me {
+  align-self: flex-end;
+  background: #0284c7;
+  color: #fff;
+}
+
+.msg-other {
+  align-self: flex-start;
+  background: #334155;
+  color: #fff;
+}
+
+.empty-chat-msg {
+  text-align: center;
+  color: #64748b;
+  margin-top: 30px;
+  font-size: 0.85rem;
+}
+
+.chat-input-area {
+  padding: 10px;
+  display: flex;
+  gap: 8px;
+  border-top: 1px solid #334155;
+}
+
+.chat-input-area input {
+  flex: 1;
+  background: #0f172a;
+  border: 1px solid #334155;
+  color: #fff;
+  padding: 8px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+/* Profile & Admin Panel */
+.profile-card {
+  background: #1e293b;
+  padding: 20px;
+  border-radius: 12px;
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.profile-avatar {
+  font-size: 2.5rem;
+  color: #38bdf8;
+}
+
+.role-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  margin-top: 4px;
+}
+
+.role-owner { background: #ef4444; color: #fff; }
+.role-admin { background: #f59e0b; color: #fff; }
+.role-user { background: #64748b; color: #fff; }
+
+.admin-panel {
+  background: #0f172a;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #f59e0b;
+  margin-bottom: 20px;
+}
+
+.admin-panel h3 {
+  color: #f59e0b;
+  margin-bottom: 8px;
+  font-size: 1rem;
+}
+
+.user-roles-list {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.user-role-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #1e293b;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+/* Modal */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.7);
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 15px;
+}
+
+.modal-content {
+  background: #1e293b;
+  padding: 20px;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 360px;
+  position: relative;
+}
+
+.close-modal {
+  position: absolute;
+  top: 10px; right: 15px;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.modal-tabs {
+  display: flex;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #334155;
+}
+
+.modal-tab-btn {
+  flex: 1;
+  padding: 8px;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+}
+
+.modal-tab-btn.active {
+  border-bottom: 2px solid #38bdf8;
+  color: #38bdf8;
+  font-weight: bold;
+}
+
+.auth-form {
+  display: none;
+}
+
+.auth-form.active {
+  display: block;
+}
+
+.error-msg {
+  color: #ef4444;
+  font-size: 0.8rem;
+  margin-bottom: 8px;
+}
+
+/* Blocked Overlay */
+.blocked-overlay {
+  position: fixed;
+  top:0; left:0; width:100%; height:100%;
+  background: rgba(15, 23, 42, 0.95);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.blocked-box {
+  text-align: center;
+  background: #1e293b;
+  padding: 30px 20px;
+  border-radius: 12px;
+  border: 1px solid #ef4444;
+  max-width: 380px;
+  width: 100%;
+}
+
+.blocked-icon {
+  font-size: 3rem;
+  color: #ef4444;
+  margin-bottom: 12px;
+}
+
+/* ========================================================
+   📱 MOBIL UCHUN MOSLASHUVCHAN (RESPONSIVE) KODLAR
+   ======================================================== */
+@media (max-width: 768px) {
+  body {
+    padding-bottom: 75px; /* Pastki navigatsiya tugmalari ostida kontent to'silib qolmasligi uchun */
   }
-};
+
+  .navbar {
+    padding: 10px 15px;
+  }
+
+  /* Mobil ekranda asosiy menyuni pastga tushirish (Bottom Navigation Bar) */
+  .nav-links {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: #1e293b;
+    border-top: 1px solid #334155;
+    display: flex;
+    justify-content: space-around;
+    padding: 8px 0;
+    z-index: 1000;
+  }
+
+  .nav-btn {
+    flex-direction: column;
+    gap: 3px;
+    font-size: 0.7rem;
+    padding: 4px 8px;
+  }
+
+  .nav-btn i {
+    font-size: 1.2rem;
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .cards-grid {
+    grid-template-columns: 1fr; /* Mobil ekranda kartochkalar 1 tadan qatorda chiqadi */
+  }
+
+  .chat-container {
+    flex-direction: column;
+    height: 75vh;
+  }
+
+  .chat-sidebar {
+    width: 100%;
+    height: 120px;
+    border-right: none;
+    border-bottom: 1px solid #334155;
+  }
+
+  .btn {
+    font-size: 0.8rem;
+    padding: 6px 10px;
+  }
+}
