@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Маркетплейс</title>
+  <title>Маркетплейс & Ключи</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="style.css">
 </head>
@@ -14,7 +14,7 @@
     <div class="blocked-box">
       <i class="fa-solid fa-lock blocked-icon"></i>
       <h2>Ваш аккаунт заблокирован!</h2>
-      <p>Вы не можете пользоваться сайтом, так как администрация заблокировала ваш профиль.</p>
+      <p>Вы не можете пользоваться сайтом.</p>
       <button id="blockedLogoutBtn" class="btn btn-danger">Выйти из аккаунта</button>
     </div>
   </div>
@@ -22,20 +22,24 @@
   <!-- Navigation Bar -->
   <header class="navbar">
     <div class="logo">
-      <i class="fa-solid fa-fire"></i>
-      <span>Маркет</span>
+      <i class="fa-solid fa-coins" style="color: #f59e0b;"></i>
+      <span>Маркет & Ключи</span>
     </div>
 
-    <!-- User Zone (Headerda turadi) -->
+    <!-- User Zone -->
     <div class="user-auth-zone">
+      <span id="navCoins" class="user-display hidden" style="color:#f59e0b; font-weight:bold;">
+        <i class="fa-solid fa-coins"></i> <span id="userCoinsCount">0</span>
+      </span>
       <span id="navUsername" class="user-display"><i class="fa-solid fa-circle-user"></i> Гость</span>
       <button id="openAuthModalBtn" class="btn btn-primary"><i class="fa-solid fa-right-to-bracket"></i> Войти</button>
       <button id="logoutBtn" class="btn btn-danger hidden"><i class="fa-solid fa-right-from-bracket"></i></button>
     </div>
 
-    <!-- Navigation Links (Mobilda pastki menyuga aylanadi) -->
+    <!-- Navigation Links -->
     <nav class="nav-links">
-      <button id="tabMarketBtn" class="nav-btn active"><i class="fa-solid fa-store"></i> <span>Товары</span></button>
+      <button id="tabMarketBtn" class="nav-btn active"><i class="fa-solid fa-store"></i> <span>Маркет</span></button>
+      <button id="tabKeysBtn" class="nav-btn"><i class="fa-solid fa-key"></i> <span>Ключи</span></button>
       <button id="tabAddBtn" class="nav-btn"><i class="fa-solid fa-plus-circle"></i> <span>Продать</span></button>
       <button id="tabChatBtn" class="nav-btn"><i class="fa-solid fa-comments"></i> <span>Чат</span></button>
       <button id="tabProfileBtn" class="nav-btn"><i class="fa-solid fa-user"></i> <span>Профиль</span></button>
@@ -45,51 +49,63 @@
   <!-- Main Container -->
   <main class="container">
     
-    <!-- Tab 1: Market Grid -->
+    <!-- Tab 1: Obshiy Market -->
     <section id="marketSection" class="tab-content active">
       <div class="section-header">
-        <h2><i class="fa-solid fa-fire"></i> Все Товары</h2>
-        <button id="shareSiteBtn" class="btn btn-secondary"><i class="fa-solid fa-share-nodes"></i> Поделиться сайтом</button>
+        <h2><i class="fa-solid fa-store"></i> Общий Маркет</h2>
       </div>
       <div id="marketGrid" class="cards-grid"></div>
     </section>
 
-    <!-- Tab 2: Add Product -->
+    <!-- Tab 2: Kluchlar Marketi -->
+    <section id="keysSection" class="tab-content">
+      <div class="section-header">
+        <h2><i class="fa-solid fa-key" style="color: #f59e0b;"></i> Маркет Ключей (За Коины)</h2>
+      </div>
+      <div id="keysGrid" class="cards-grid"></div>
+    </section>
+
+    <!-- Tab 3: Add Product / Key -->
     <section id="addSection" class="tab-content">
       <div class="form-card">
-        <h2><i class="fa-solid fa-plus-circle"></i> Выставить товар</h2>
+        <h2><i class="fa-solid fa-plus-circle"></i> Выставить товар / ключ</h2>
         <form id="sellForm">
           <div class="form-group">
-            <label>Название товара:</label>
-            <input type="text" id="prodTitle" placeholder="Например: VIP Аккаунт" required>
-          </div>
-          
-          <div class="form-group">
-            <label>Тип товара:</label>
-            <select id="prodType">
-              <option value="image">С картинкой</option>
-              <option value="text">Текстовый (Без картинки)</option>
+            <label>Категория публикации:</label>
+            <select id="prodCategory">
+              <option value="market">Общий Маркет (Обычный)</option>
+              <option value="key">Маркет Ключей (Продажа за Коины)</option>
             </select>
           </div>
 
           <div class="form-group">
-            <label>Ссылка на картинку:</label>
+            <label>Название товара / ключа:</label>
+            <input type="text" id="prodTitle" placeholder="Например: Steam Key / VIP Аккаунт" required>
+          </div>
+
+          <div class="form-group" id="priceGroup">
+            <label>Цена в Коинах (только для Ключей):</label>
+            <input type="number" id="prodPrice" min="1" value="10" placeholder="Сколько коинов стоит">
+          </div>
+
+          <div class="form-group">
+            <label>Ссылка на картинку (необязательно):</label>
             <input type="url" id="prodImgUrl" placeholder="https://example.com/image.jpg">
           </div>
 
           <div class="form-group">
-            <label>Публичное описание:</label>
-            <textarea id="prodDesc" rows="3" placeholder="Описание, которое видят все..." required></textarea>
+            <label>Описание:</label>
+            <textarea id="prodDesc" rows="3" placeholder="Описание товара..." required></textarea>
           </div>
 
           <div class="form-group secret-group">
-            <label><i class="fa-solid fa-key"></i> Секретные данные (пароли, логины, ссылки):</label>
-            <textarea id="prodSecretData" rows="3" placeholder="Данные, которые откроются только по паролю..." required></textarea>
+            <label><i class="fa-solid fa-key"></i> Секретный Ключ / Данные:</label>
+            <textarea id="prodSecretData" rows="2" placeholder="Ключ или данные для покупателя..." required></textarea>
           </div>
 
-          <div class="form-group secret-group">
-            <label><i class="fa-solid fa-lock"></i> Пароль для покупателя:</label>
-            <input type="text" id="prodSecretPassword" placeholder="Придумайте пароль" required>
+          <div class="form-group secret-group" id="passGroup">
+            <label><i class="fa-solid fa-lock"></i> Пароль (для Обычного Маркета):</label>
+            <input type="text" id="prodSecretPassword" placeholder="Придумайте пароль">
           </div>
 
           <button type="submit" class="btn btn-primary btn-block"><i class="fa-solid fa-check"></i> Опубликовать</button>
@@ -97,11 +113,11 @@
       </div>
     </section>
 
-    <!-- Tab 3: Chat System -->
+    <!-- Tab 4: Chat -->
     <section id="chatSection" class="tab-content">
       <div class="chat-container">
         <div class="chat-sidebar">
-          <h3>Чатlar</h3>
+          <h3>Чаты</h3>
           <div id="chatUsersList"></div>
         </div>
         <div class="chat-main">
@@ -117,7 +133,7 @@
       </div>
     </section>
 
-    <!-- Tab 4: Profile & Admin Panel -->
+    <!-- Tab 5: Profile & Admin Panel -->
     <section id="profileSection" class="tab-content">
       <div class="profile-card">
         <div class="profile-header">
@@ -125,13 +141,16 @@
           <div>
             <h2 id="profName">Гость</h2>
             <span id="profRoleBadge" class="role-tag role-user">Пользователь</span>
+            <div style="margin-top: 5px; color: #f59e0b; font-weight: bold;">
+              Баланс: <span id="profBalance">0</span> Коинов
+            </div>
           </div>
         </div>
 
         <!-- Admin Control Panel -->
         <div id="adminPanel" class="admin-panel hidden">
-          <h3><i class="fa-solid fa-shield-halved"></i> Панель Администрации</h3>
-          <p>Управление пользователями:</p>
+          <h3><i class="fa-solid fa-shield-halved"></i> Панель Администрации (Выдача Коинов)</h3>
+          <p>Управление пользователями и балансом:</p>
           <div id="userRolesList" class="user-roles-list"></div>
         </div>
 
@@ -144,7 +163,7 @@
 
   </main>
 
-  <!-- Login/Register Modal -->
+  <!-- Auth Modal -->
   <div id="authModal" class="modal">
     <div class="modal-content">
       <span id="closeAuthModal" class="close-modal">&times;</span>
@@ -172,14 +191,7 @@
       <form id="registerForm" class="auth-form">
         <div class="form-group">
           <label>Логин:</label>
-          <div style="display:flex; gap:5px;">
-            <input type="text" id="regUser" placeholder="Ваш логин" required style="flex:1;">
-            <select id="presetNick" style="width:110px;">
-              <option value="">Без приставки</option>
-              <option value="_988">_988</option>
-              <option value="_OFFICIAL">_OFFICIAL</option>
-            </select>
-          </div>
+          <input type="text" id="regUser" placeholder="Ваш логин" required>
         </div>
         <div class="form-group">
           <label>Пароль:</label>
