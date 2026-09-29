@@ -4,13 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Маркетплейс</title>
-  <!-- Иконки FontAwesome -->
+  <!-- FontAwesome ikonkalari -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <!-- ШАПКА САЙТА -->
+  <!-- SHAPKA -->
   <header class="navbar">
     <div class="logo">
       <i class="fa-solid fa-store"></i> Маркет
@@ -22,21 +22,21 @@
     </div>
   </header>
 
-  <!-- ОСНОВНОЙ КОНТЕНТ -->
+  <!-- ASOSIY KONTENT -->
   <main class="main-content">
 
-    <!-- 1. ВБЛАДКА: ТОВАРЫ (ГЛАВНАЯ) -->
+    <!-- 1. VILTRINA (TAVARLAR) -->
     <section id="marketSection" class="tab-content active">
       <div class="section-header">
         <h2><i class="fa-solid fa-cart-shopping"></i> Витрина товаров</h2>
         <button id="shareSiteBtn" class="btn btn-secondary btn-sm"><i class="fa-solid fa-share-nodes"></i> Поделиться</button>
       </div>
       <div id="marketGrid" class="grid-container">
-        <!-- Товары рендерятся через JS -->
+        <!-- Tovarlar JS orqali chiqadi -->
       </div>
     </section>
 
-    <!-- 2. ВКЛАДКА: ПРОДАТЬ -->
+    <!-- 2. PRODAT (SOTISH) -->
     <section id="addSection" class="tab-content">
       <h2><i class="fa-solid fa-plus-circle"></i> Выставить товар</h2>
       <form id="sellForm" class="card-form">
@@ -69,7 +69,7 @@
           <textarea id="prodSecretData" rows="3" placeholder="Логин:пароль, ссылка, промокод и т.д." required></textarea>
         </div>
 
-        <!-- ВОТ ПОЛЕ ПАРОЛЯ, КОТОРОГО НЕ ХВАТАЛО -->
+        <!-- TAVAR PAROLI MAYDONI -->
         <div class="form-group">
           <label><i class="fa-solid fa-key"></i> Пароль для доступа к товару (необязательно):</label>
           <input type="text" id="prodAccessPass" placeholder="Пароль для покупателя (оставьте пустым, если без пароля)">
@@ -79,13 +79,13 @@
       </form>
     </section>
 
-    <!-- 3. ВКЛАДКА: ЧАТ -->
+    <!-- 3. CHAT -->
     <section id="chatSection" class="tab-content">
       <div class="chat-container">
         <div class="chat-sidebar">
           <h3>Чаты</h3>
           <div id="chatUsersList" class="chat-users-list">
-            <!-- Список пользователей рендерится через JS -->
+            <!-- Foydalanuvchilar JS orqali -->
           </div>
         </div>
         <div class="chat-main">
@@ -101,7 +101,7 @@
       </div>
     </section>
 
-    <!-- 4. ВКЛАДКА: ПРОФИЛЬ И ПАНЕЛЬ АДМИНИСТРАЦИИ -->
+    <!-- 4. PROFIL VA ADMIN PANEL -->
     <section id="profileSection" class="tab-content">
       <div class="profile-card">
         <div class="profile-header">
@@ -112,24 +112,24 @@
           </div>
         </div>
 
-        <!-- ПАНЕЛЬ АДМИНИСТРАЦИИ (Видна только Админу / Владельцу) -->
+        <!-- ADMIN PANEL -->
         <div id="adminPanel" class="admin-panel hidden">
           <h3><i class="fa-solid fa-shield-halved"></i> Панель управления пользователями</h3>
           <div id="userRolesList" class="admin-users-list">
-            <!-- Список зарегистрированных пользователей рендерится через JS -->
+            <!-- Foydalanuvchilar ro'yxati -->
           </div>
         </div>
 
         <h3>Мои выставленные товары</h3>
         <div id="myProductsGrid" class="grid-container">
-          <!-- Товары текущего пользователя -->
+          <!-- Mening tavarlarim -->
         </div>
       </div>
     </section>
 
   </main>
 
-  <!-- НИЖНЯЯ НАВИГАЦИЯ (ТАБЫ) -->
+  <!-- PASGI NAVIGATSIYA (TABLAR) -->
   <nav class="bottom-nav">
     <button id="tabMarketBtn" class="nav-item active">
       <i class="fa-solid fa-shop"></i>
@@ -149,7 +149,7 @@
     </button>
   </nav>
 
-  <!-- МОДАЛЬНОЕ ОКНО АВТОРИЗАЦИИ / РЕГИСТРАЦИИ -->
+  <!-- KIRISH / RO'YXATDAN O'TISH MODAL OYNASI -->
   <div id="authModal" class="modal-overlay" style="display: none;">
     <div class="modal-card">
       <span id="closeAuthModal" class="close-btn">&times;</span>
@@ -159,7 +159,7 @@
         <button id="showRegisterBtn" class="auth-tab-btn">Регистрация</button>
       </div>
 
-      <!-- Форма Входа -->
+      <!-- Kirish formasi -->
       <form id="loginForm" class="auth-form active">
         <div class="form-group">
           <label>Логин:</label>
@@ -173,7 +173,7 @@
         <button type="submit" class="btn btn-primary btn-block">Войти</button>
       </form>
 
-      <!-- Форма Регистрации -->
+      <!-- Ro'yxatdan o'tish formasi -->
       <form id="registerForm" class="auth-form">
         <div class="form-group">
           <label>Придумайте Логин:</label>
@@ -195,7 +195,7 @@
     </div>
   </div>
 
-  <!-- ОКНО БЛОКИРОВКИ ПОЛЬЗОВАТЕЛЯ -->
+  <!-- BLOKLANGANLAR OYNASI -->
   <div id="blockedOverlay" class="modal-overlay hidden">
     <div class="modal-card text-center">
       <i class="fa-solid fa-ban danger-icon"></i>
@@ -205,7 +205,6 @@
     </div>
   </div>
 
-  <!-- Подключение JS -->
   <script src="script.js"></script>
 </body>
 </html>
