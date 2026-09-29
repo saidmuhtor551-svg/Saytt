@@ -25,17 +25,21 @@
       <i class="fa-solid fa-fire"></i>
       <span>Маркет</span>
     </div>
-    <nav class="nav-links">
-      <button id="tabMarketBtn" class="nav-btn active"><i class="fa-solid fa-store"></i> Все Товары</button>
-      <button id="tabAddBtn" class="nav-btn"><i class="fa-solid fa-plus-circle"></i> Продать</button>
-      <button id="tabChatBtn" class="nav-btn"><i class="fa-solid fa-comments"></i> Сообщения</button>
-      <button id="tabProfileBtn" class="nav-btn"><i class="fa-solid fa-user"></i> Профиль</button>
-    </nav>
+
+    <!-- User Zone (Headerda turadi) -->
     <div class="user-auth-zone">
       <span id="navUsername" class="user-display"><i class="fa-solid fa-circle-user"></i> Гость</span>
       <button id="openAuthModalBtn" class="btn btn-primary"><i class="fa-solid fa-right-to-bracket"></i> Войти</button>
-      <button id="logoutBtn" class="btn btn-danger hidden"><i class="fa-solid fa-right-from-bracket"></i> Выйти</button>
+      <button id="logoutBtn" class="btn btn-danger hidden"><i class="fa-solid fa-right-from-bracket"></i></button>
     </div>
+
+    <!-- Navigation Links (Mobilda pastki menyuga aylanadi) -->
+    <nav class="nav-links">
+      <button id="tabMarketBtn" class="nav-btn active"><i class="fa-solid fa-store"></i> <span>Товары</span></button>
+      <button id="tabAddBtn" class="nav-btn"><i class="fa-solid fa-plus-circle"></i> <span>Продать</span></button>
+      <button id="tabChatBtn" class="nav-btn"><i class="fa-solid fa-comments"></i> <span>Чат</span></button>
+      <button id="tabProfileBtn" class="nav-btn"><i class="fa-solid fa-user"></i> <span>Профиль</span></button>
+    </nav>
   </header>
 
   <!-- Main Container -->
@@ -44,7 +48,7 @@
     <!-- Tab 1: Market Grid -->
     <section id="marketSection" class="tab-content active">
       <div class="section-header">
-        <h2><i class="fa-solid fa-fire"></i> Все Товары и Объявления</h2>
+        <h2><i class="fa-solid fa-fire"></i> Все Товары</h2>
         <button id="shareSiteBtn" class="btn btn-secondary"><i class="fa-solid fa-share-nodes"></i> Поделиться сайтом</button>
       </div>
       <div id="marketGrid" class="cards-grid"></div>
@@ -53,7 +57,7 @@
     <!-- Tab 2: Add Product -->
     <section id="addSection" class="tab-content">
       <div class="form-card">
-        <h2><i class="fa-solid fa-plus-circle"></i> Выставить товар на продажу</h2>
+        <h2><i class="fa-solid fa-plus-circle"></i> Выставить товар</h2>
         <form id="sellForm">
           <div class="form-group">
             <label>Название товара:</label>
@@ -63,13 +67,13 @@
           <div class="form-group">
             <label>Тип товара:</label>
             <select id="prodType">
-              <option value="image">С картиной (Карточка с обложкой)</option>
-              <option value="text">Текстовый товар (Без картинки)</option>
+              <option value="image">С картинкой</option>
+              <option value="text">Текстовый (Без картинки)</option>
             </select>
           </div>
 
           <div class="form-group">
-            <label>Ссылка на картинку (если выбрали тип "С картиной"):</label>
+            <label>Ссылка на картинку:</label>
             <input type="url" id="prodImgUrl" placeholder="https://example.com/image.jpg">
           </div>
 
@@ -79,13 +83,13 @@
           </div>
 
           <div class="form-group secret-group">
-            <label><i class="fa-solid fa-key"></i> Секретные данные (зароли, логины, ссылки):</label>
+            <label><i class="fa-solid fa-key"></i> Секретные данные (пароли, логины, ссылки):</label>
             <textarea id="prodSecretData" rows="3" placeholder="Данные, которые откроются только по паролю..." required></textarea>
           </div>
 
           <div class="form-group secret-group">
             <label><i class="fa-solid fa-lock"></i> Пароль для покупателя:</label>
-            <input type="text" id="prodSecretPassword" placeholder="Придумайте пароль к секретным данным" required>
+            <input type="text" id="prodSecretPassword" placeholder="Придумайте пароль" required>
           </div>
 
           <button type="submit" class="btn btn-primary btn-block"><i class="fa-solid fa-check"></i> Опубликовать</button>
@@ -97,13 +101,13 @@
     <section id="chatSection" class="tab-content">
       <div class="chat-container">
         <div class="chat-sidebar">
-          <h3>Пользователи</h3>
+          <h3>Чатlar</h3>
           <div id="chatUsersList"></div>
         </div>
         <div class="chat-main">
           <div id="chatHeader" class="chat-header">Выберите собеседника</div>
           <div id="chatMessages" class="chat-messages">
-            <div class="empty-chat-msg">Выберите чат из списка слева</div>
+            <div class="empty-chat-msg">Выберите чат из списка</div>
           </div>
           <form id="chatForm" class="chat-input-area">
             <input type="text" id="chatInput" placeholder="Введите сообщение..." disabled required>
@@ -127,7 +131,7 @@
         <!-- Admin Control Panel -->
         <div id="adminPanel" class="admin-panel hidden">
           <h3><i class="fa-solid fa-shield-halved"></i> Панель Администрации</h3>
-          <p>Управление пользователями и ролями на сайте:</p>
+          <p>Управление пользователями:</p>
           <div id="userRolesList" class="user-roles-list"></div>
         </div>
 
@@ -169,7 +173,7 @@
         <div class="form-group">
           <label>Логин:</label>
           <div style="display:flex; gap:5px;">
-            <input type="text" id="regUser" placeholder="Ваш логин" required>
+            <input type="text" id="regUser" placeholder="Ваш логин" required style="flex:1;">
             <select id="presetNick" style="width:110px;">
               <option value="">Без приставки</option>
               <option value="_988">_988</option>
