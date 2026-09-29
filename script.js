@@ -2,7 +2,8 @@ window.addEventListener('firebase-ready', () => {
   let currentUser = JSON.parse(localStorage.getItem('mp_current_user')) || null;
   let products = [];
   let registeredUsers = [];
-  let onlineUsers = [];
+  let onlineUsersMap = {};
+  const deviceId = '_' + Math.random().toString(36).substr(2, 9); // Har bir qurilma uchun unikal ID
 
   const marketGrid = document.getElementById("marketGrid");
   const myProductsGrid = document.getElementById("myProductsGrid");
@@ -16,9 +17,17 @@ window.addEventListener('firebase-ready', () => {
   const userRolesList = document.getElementById("userRolesList");
   const onlineUsersList = document.getElementById("onlineUsersList");
 
-  function switchTab(tabName) {
+  // Tabni saqlab qolish (Profilni yangilanganda boshiga sakrab ketmasligi uchun)
+  let activeTab = localStorage.getItem('mp_active_tab') || 'market';
+  switchTab(activeTab, false);
+
+  function switchTab(tabName, save = true) {
+    activeTab = tabName;
+    if (save) localStorage.setItem('mp_active_tab', tabName);
+
     document.querySelectorAll('.tab-content').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    
     if (tabName === 'market') {
       document.getElementById('marketSection').classList.add('active');
       document.getElementById('tabMarketBtn').classList.add('active');
@@ -114,7 +123,7 @@ window.addEventListener('firebase-ready', () => {
   logoutBtn.onclick = async () => {
     if (currentUser) {
       try {
-        await window.deleteDoc(window.doc(window.db, "online", currentUser.username));
+        await window.deleteDoc(window.doc(window.db, "online", currentUser.username + deviceId));
       } catch(err) {}
     }
     currentUser = null;
@@ -138,30 +147,46 @@ window.addEventListener('firebase-ready', () => {
   async function pingOnlineStatus() {
     if (!currentUser) return;
     try {
-      await window.setDoc(window.doc(window.db, "online", currentUser.username), {
+      await window.setDoc(window.doc(window.db, "online", currentUser.username + deviceId), {
         username: currentUser.username,
         lastActive: Date.now()
       });
     } catch (err) {}
   }
 
-  setInterval(pingOnlineStatus, 10000);
+  setInterval(pingOnlineStatus, 8000);
+
+  // Sahifadan chiqib ketganda onlayn statusini o'chirish
+  window.addEventListener('beforeunload', () => {
+    if (currentUser) {
+      navigator.sendBeacon ? null : null; // xavfsiz yopilish
+      // Firebase'dan o'chirish uchun
+      window.deleteDoc(window.doc(window.db, "online", currentUser.username + deviceId)).catch(()=>{});
+    }
+  });
 
   function listenOnlineUsers() {
     window.onSnapshot(window.collection(window.db, "online"), (snapshot) => {
-      onlineUsers = [];
+      onlineUsersMap = {};
       const now = Date.now();
       snapshot.forEach((docSnap) => {
         let data = docSnap.data();
-        if (now - data.lastActive < 30000) {
-          onlineUsers.push(data.username);
+        if (now - data.lastActive < 20000) { // 20 sekund ichida signal berganlar
+          onlineUsersMap[data.username] = true;
         }
       });
       
-      if (onlineUsers.length === 0) {
-        onlineUsersList.textContent = "Hozircha hech kim yo'q (Faqat siz)";
+      // Asosiy ekrandagi onlaynlar ro'yxatini yangilash
+      let onlineNames = Object.keys(onlineUsersMap);
+      if (onlineNames.length === 0) {
+        onlineUsersList.textContent = "Hozircha hech kim yo'q";
       } else {
-        onlineUsersList.innerHTML = onlineUsers.map(name => `<b>👤 ${name}</b>`).join(", ");
+        onlineUsersList.innerHTML = onlineNames.map(name => `<b>👤 ${name}</b>`).join(", ");
+      }
+
+      // Agar admin panel ochiq bo'lsa, uni ham yangilash
+      if (currentUser && (currentUser.role === "Владелец сайта" || currentUser.role === "Администратор")) {
+        renderAdminUsersList();
       }
     });
   }
@@ -334,6 +359,12 @@ window.addEventListener('firebase-ready', () => {
       const row = document.createElement("div");
       row.className = "user-role-row";
 
+      // Onlayn yoki offlaynligini tekshirish
+      let isOnline = onlineUsersMap[u.username] === true;
+      let statusBadge = isOnline 
+        ? `<span style="color: var(--success); font-size: 0.75rem; font-weight: bold; margin-left: 8px;"><i class="fa-solid fa-circle" style="font-size: 6px;"></i> Online</span>` 
+        : `<span style="color: var(--text-muted); font-size: 0.75rem; margin-left: 8px;"><i class="fa-regular fa-circle" style="font-size: 6px;"></i> Offline</span>`;
+
       let blockBtnText = u.isBlocked ? "Banddan chiqarish" : "Bloklash";
       let blockBtnColor = u.isBlocked ? "btn-success" : "btn-danger";
 
@@ -350,6 +381,7 @@ window.addEventListener('firebase-ready', () => {
       row.innerHTML = `
         <div>
           <b>${u.username}</b> <span class="role-tag">${u.role}</span>
+          ${statusBadge}
           ${u.isBlocked ? '<span style="color:var(--danger); font-size:0.75rem; margin-left:6px;">[Bloklangan]</span>' : ''}
         </div>
         <div style="display:flex; gap:4px;">${actionButtons}</div>
