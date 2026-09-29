@@ -1,25 +1,36 @@
-// Database Initialization - LocalStorage or Default
+// Database Initialization - LocalStorage or Default Data
 let registeredUsers = JSON.parse(localStorage.getItem('mp_users')) || [
   { username: "KOROL_988", pass: "said9800", role: "Владелец сайта", isBlocked: false },
   { username: "Admin_Ali", pass: "ali1234", role: "Администратор", isBlocked: false },
   { username: "SimpleUser", pass: "1234", role: "Пользователь", isBlocked: false }
 ];
 
-// Current Logged-in User Persistence
+// Active User Persistence
 let currentUser = JSON.parse(localStorage.getItem('mp_current_user')) || null;
 let activeChatPartner = null;
 
-let products = JSON.parse(localStorage.getItem('mp_products')) || [];
-let chats = JSON.parse(localStorage.getItem('mp_chats')) || [
-  { sender: "Admin_Ali", receiver: "KOROL_988", text: "Здравствуйте! У меня вопрос по поводу товара." },
-  { sender: "KOROL_988", receiver: "Admin_Ali", text: "Приветствую! Задавайте, слушаю вас." }
+// Load Global Products and Chats (Shared Across All Users)
+let products = JSON.parse(localStorage.getItem('mp_products')) || [
+  {
+    id: 1,
+    seller: "KOROL_988",
+    title: "Тестовый Товар Владельца",
+    type: "image",
+    img: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=500",
+    desc: "Это пример товара, который видят все пользователи.",
+    secretData: "Логин: admin | Пароль: secret_pass",
+    passKey: "123"
+  }
 ];
 
-// Save state to LocalStorage
+let chats = JSON.parse(localStorage.getItem('mp_chats')) || [];
+
+// Save State Function
 function saveData() {
   localStorage.setItem('mp_users', JSON.stringify(registeredUsers));
   localStorage.setItem('mp_products', JSON.stringify(products));
   localStorage.setItem('mp_chats', JSON.stringify(chats));
+  
   if (currentUser) {
     localStorage.setItem('mp_current_user', JSON.stringify(currentUser));
   } else {
@@ -61,7 +72,7 @@ const userRolesList = document.getElementById("userRolesList");
 const blockedOverlay = document.getElementById("blockedOverlay");
 const blockedLogoutBtn = document.getElementById("blockedLogoutBtn");
 
-// Copy Direct Clean URL
+// Copy Direct URL
 if (shareSiteBtn) {
   shareSiteBtn.onclick = () => {
     const cleanUrl = window.location.origin + window.location.pathname;
@@ -70,12 +81,12 @@ if (shareSiteBtn) {
   };
 }
 
-// Blocked User Check
+// Check Blocked State
 function checkBlockedState() {
   if (currentUser && currentUser.isBlocked) {
-    blockedOverlay.classList.remove("hidden");
+    blockedOverlay?.classList.remove("hidden");
   } else {
-    blockedOverlay.classList.add("hidden");
+    blockedOverlay?.classList.add("hidden");
   }
 }
 
@@ -88,7 +99,7 @@ if (blockedLogoutBtn) {
   };
 }
 
-// Tab Switching & Saving State
+// Navigation / Tabs
 function resetTabs() {
   [marketSection, addSection, profileSection, chatSection].forEach(s => s?.classList.remove("active"));
   [tabMarketBtn, tabAddBtn, tabProfileBtn, tabChatBtn].forEach(b => b?.classList.remove("active"));
@@ -120,7 +131,7 @@ if (tabAddBtn) tabAddBtn.onclick = () => switchTab('add');
 if (tabProfileBtn) tabProfileBtn.onclick = () => switchTab('profile');
 if (tabChatBtn) tabChatBtn.onclick = () => switchTab('chat');
 
-// Auth Modal Controls
+// Auth Modals
 if (openAuthModalBtn) openAuthModalBtn.onclick = () => authModal.style.display = "flex";
 if (closeAuthModal) closeAuthModal.onclick = () => authModal.style.display = "none";
 
@@ -135,7 +146,7 @@ if (showLoginBtn && showRegisterBtn) {
   };
 }
 
-// Register Handle
+// Registration
 if (registerForm) {
   registerForm.onsubmit = (e) => {
     e.preventDefault();
@@ -154,13 +165,13 @@ if (registerForm) {
     registeredUsers.push(newUser);
     saveData();
 
-    alert(`Аккаунт успешно создан! Ваш ник: ${u}`);
+    alert(`Аккаунт создался! Ваш логин: ${u}`);
     registerForm.reset();
     showLoginBtn.click();
   };
 }
 
-// Login Handle
+// Login
 if (loginForm) {
   loginForm.onsubmit = (e) => {
     e.preventDefault();
@@ -182,13 +193,14 @@ if (loginForm) {
 
       alert(`Добро пожаловать, ${currentUser.username}!`);
       renderMarket();
+      renderProfile();
     } else {
       if (loginError) loginError.classList.remove("hidden");
     }
   };
 }
 
-// Logout Handle
+// Logout
 if (logoutBtn) {
   logoutBtn.onclick = () => {
     currentUser = null;
@@ -196,24 +208,25 @@ if (logoutBtn) {
     updateUserNavUI();
     checkBlockedState();
     renderMarket();
+    renderProfile();
   };
 }
 
-// UI Nav Update
+// Update Top Bar User Info
 function updateUserNavUI() {
   if (currentUser) {
-    navUsername.textContent = currentUser.username;
+    navUsername.innerHTML = `<i class="fa-solid fa-circle-user"></i> ${currentUser.username}`;
     openAuthModalBtn.classList.add("hidden");
     logoutBtn.classList.remove("hidden");
     if (loginError) loginError.classList.add("hidden");
   } else {
-    navUsername.textContent = "Гость";
+    navUsername.innerHTML = `<i class="fa-solid fa-circle-user"></i> Гость`;
     openAuthModalBtn.classList.remove("hidden");
     logoutBtn.classList.add("hidden");
   }
 }
 
-// Add Product Handle
+// Add Product
 if (sellForm) {
   sellForm.onsubmit = (e) => {
     e.preventDefault();
@@ -243,16 +256,19 @@ if (sellForm) {
 
     products.unshift(newProd);
     saveData();
-    alert("Товар успешно выставлен на продажу!");
+    alert("Товар успешно опубликован!");
     sellForm.reset();
     switchTab('market');
   };
 }
 
-// Render Market
+// Render Market Products (Visible to EVERYONE)
 function renderMarket() {
   if (!marketGrid) return;
   marketGrid.innerHTML = "";
+
+  // Always sync with latest storage
+  products = JSON.parse(localStorage.getItem('mp_products')) || [];
 
   if (products.length === 0) {
     marketGrid.innerHTML = "<p style='color:#9ca3af; grid-column: 1/-1; text-align: center; padding: 40px;'>Товаров пока нет. Вы можете добавить первый товар!</p>";
@@ -280,7 +296,7 @@ function renderMarket() {
       <div class="card-body">
         <div>
           <div class="seller-info">
-            <span><i class="fa-solid fa-user-tag"></i> ${p.seller}</span>
+            <span><i class="fa-solid fa-user-tag"></i> <b>${p.seller}</b></span>
             <div>
               <button class="btn btn-warning" style="padding: 4px 8px; font-size: 0.75rem;" onclick="openChatWithSeller('${p.seller}')">
                 <i class="fa-solid fa-paper-plane"></i> Чат
@@ -306,7 +322,7 @@ function renderMarket() {
   });
 }
 
-// Delete Product Function
+// Delete Product
 window.deleteProduct = function(id) {
   if (confirm("Вы действительно хотите удалить этот товар?")) {
     products = products.filter(p => p.id !== id);
@@ -316,7 +332,7 @@ window.deleteProduct = function(id) {
   }
 };
 
-// Unlock Secret Content by Password
+// Unlock Secret
 window.unlockSecret = function(id) {
   const prod = products.find(p => p.id === id);
   const inputEl = document.getElementById(`passInput_${id}`);
@@ -355,6 +371,7 @@ function renderProfile() {
     else profRoleBadge.className = "role-tag role-user";
   }
 
+  // Show Admin Panel if Owner or Admin
   if (currentUser.role === "Владелец сайта" || currentUser.role === "Администратор") {
     if (adminPanel) adminPanel.classList.remove("hidden");
     renderAdminUserList();
@@ -362,6 +379,7 @@ function renderProfile() {
     if (adminPanel) adminPanel.classList.add("hidden");
   }
 
+  // My Products list
   if (myProductsGrid) {
     myProductsGrid.innerHTML = "";
     const myProds = products.filter(p => p.seller === currentUser.username);
@@ -384,14 +402,16 @@ function renderProfile() {
   }
 }
 
-// Render Admin Management List
+// Render Admin User List (FIXED FOR NAMES SHOWING PROPERLY)
 function renderAdminUserList() {
   if (!userRolesList) return;
   userRolesList.innerHTML = "";
-  const isOwner = currentUser.role === "Владелец сайта";
+
+  registeredUsers = JSON.parse(localStorage.getItem('mp_users')) || [];
+  const isOwner = currentUser && currentUser.role === "Владелец сайта";
 
   registeredUsers.forEach(u => {
-    if (u.username === currentUser.username) return;
+    if (currentUser && u.username === currentUser.username) return;
 
     const row = document.createElement("div");
     row.className = "user-role-row";
@@ -412,10 +432,11 @@ function renderAdminUserList() {
     let roleBadgeClass = u.role === "Владелец сайта" ? "role-owner" : (u.role === "Администратор" ? "role-admin" : "role-user");
 
     row.innerHTML = `
-      <div>
-        <b>${u.username}</b> 
-        <span class="role-tag ${roleBadgeClass}" style="margin-left: 6px;">${u.role}</span>
-        ${u.isBlocked ? '<b style="color:#ef4444; font-size:0.8rem; margin-left:5px;">[ЗАБЛОКИРОВАН]</b>' : ''}
+      <div style="display:flex; align-items:center; gap:8px;">
+        <i class="fa-solid fa-user" style="color:#94a3b8;"></i>
+        <b style="color:#f8fafc;">${u.username}</b> 
+        <span class="role-tag ${roleBadgeClass}">${u.role}</span>
+        ${u.isBlocked ? '<b style="color:#ef4444; font-size:0.8rem;">[ЗАБЛОКИРОВАН]</b>' : ''}
       </div>
       <div style="display:flex; gap:5px; align-items:center;">
         ${roleActionBtns}
@@ -426,7 +447,7 @@ function renderAdminUserList() {
   });
 }
 
-// Change Role (Owner Only)
+// Change Role
 window.changeRole = function(username, newRole) {
   if (currentUser.role !== "Владелец сайта") {
     alert("Только Владелец сайта может назначать или снимать Администраторов!");
@@ -441,7 +462,7 @@ window.changeRole = function(username, newRole) {
   }
 };
 
-// Block / Unblock User
+// Block/Unblock
 window.toggleBlockUser = function(username) {
   const targetUser = registeredUsers.find(u => u.username === username);
   if (targetUser) {
@@ -545,7 +566,7 @@ function renderChatMessages() {
   }
 }
 
-// Chat Send Form
+// Send Message
 const chatForm = document.getElementById("chatForm");
 if (chatForm) {
   chatForm.onsubmit = (e) => {
@@ -567,8 +588,9 @@ if (chatForm) {
   };
 }
 
-// Page Load - State Restoration
+// Initial Load Handler
 document.addEventListener("DOMContentLoaded", () => {
+  saveData(); // Sync database
   updateUserNavUI();
   checkBlockedState();
 
