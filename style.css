@@ -9,14 +9,14 @@ body {
   background-color: #0f172a;
   color: #f8fafc;
   min-height: 100vh;
-  padding-bottom: 70px; /* Mobil menyu uchun joy */
+  padding-bottom: 70px;
 }
 
 .hidden {
   display: none !important;
 }
 
-/* Navbar (Kompyuter va umumiy stil) */
+/* Navbar */
 .navbar {
   display: flex;
   justify-content: space-between;
@@ -170,27 +170,17 @@ body {
 
 .access-zone {
   border-top: 1px solid #334155;
-  padding-top: 8px;
+  padding-top: 10px;
   margin-top: 8px;
-}
-
-.access-zone input {
-  flex: 1;
-  background-color: #0f172a;
-  border: 1px solid #334155;
-  color: #fff;
-  padding: 6px 10px;
-  border-radius: 6px;
-  font-size: 0.85rem;
 }
 
 .unlocked-data {
   margin-top: 8px;
-  padding: 8px;
+  padding: 10px;
   background-color: #064e3b;
   border: 1px solid #10b981;
   border-radius: 6px;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   color: #a7f3d0;
   word-break: break-all;
 }
@@ -253,10 +243,10 @@ body {
 }
 
 .secret-group {
-  background: #172554;
+  background: #1e293b;
   padding: 10px;
   border-radius: 8px;
-  border: 1px dashed #3b82f6;
+  border: 1px dashed #38bdf8;
 }
 
 /* Chat Container */
@@ -523,19 +513,16 @@ body {
   margin-bottom: 12px;
 }
 
-/* ========================================================
-   📱 MOBIL UCHUN MOSLASHUVCHAN (RESPONSIVE) KODLAR
-   ======================================================== */
+/* Mobile Responsive */
 @media (max-width: 768px) {
   body {
-    padding-bottom: 75px; /* Pastki navigatsiya tugmalari ostida kontent to'silib qolmasligi uchun */
+    padding-bottom: 75px;
   }
 
   .navbar {
     padding: 10px 15px;
   }
 
-  /* Mobil ekranda asosiy menyuni pastga tushirish (Bottom Navigation Bar) */
   .nav-links {
     position: fixed;
     bottom: 0;
@@ -566,7 +553,7 @@ body {
   }
 
   .cards-grid {
-    grid-template-columns: 1fr; /* Mobil ekranda kartochkalar 1 tadan qatorda chiqadi */
+    grid-template-columns: 1fr;
   }
 
   .chat-container {
