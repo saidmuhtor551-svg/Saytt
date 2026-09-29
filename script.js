@@ -1,48 +1,50 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // === STATE & STORAGE ===
+  // === SAQLANGAN MA'LUMOTLAR ===
   let currentUser = JSON.parse(localStorage.getItem('mp_current_user')) || null;
   let products = JSON.parse(localStorage.getItem('mp_products')) || [];
   let users = JSON.parse(localStorage.getItem('mp_users')) || [];
 
-  // DOM Elements
-  const tabBtns = {
-    marketSection: document.getElementById('tabMarketBtn'),
-    addSection: document.getElementById('tabAddBtn'),
-    chatSection: document.getElementById('tabChatBtn'),
-    profileSection: document.getElementById('tabProfileBtn')
+  // Tab tugmalari va bo'limlar
+  const tabs = {
+    tabMarketBtn: 'marketSection',
+    tabAddBtn: 'addSection',
+    tabChatBtn: 'chatSection',
+    tabProfileBtn: 'profileSection'
   };
 
-  const tabSections = {
-    marketSection: document.getElementById('marketSection'),
-    addSection: document.getElementById('addSection'),
-    chatSection: document.getElementById('chatSection'),
-    profileSection: document.getElementById('profileSection')
-  };
+  // === 1. OBNOVIT DANGI TABNI SAQLASH (TAB SWITCHING) ===
+  function activateTab(sectionId) {
+    // Barcha bo'limlarni va tugmalarni nofaol qilish
+    document.querySelectorAll('.tab-content').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.bottom-nav .nav-item').forEach(b => b.classList.remove('active'));
 
-  // === 1. TAB/PAGINATION FIX (Obnovit qilganda o'sha tabda qolish) ===
-  function switchTab(targetTabId) {
-    Object.keys(tabSections).forEach(id => {
-      if (tabSections[id]) tabSections[id].classList.remove('active');
-      if (tabBtns[id]) tabBtns[id].classList.remove('active');
+    // Kerakli bo'limni ochish
+    const targetSection = document.getElementById(sectionId);
+    if (targetSection) targetSection.classList.add('active');
+
+    // Kerakli tugmani belgilash
+    Object.keys(tabs).forEach(btnId => {
+      if (tabs[btnId] === sectionId) {
+        const btn = document.getElementById(btnId);
+        if (btn) btn.classList.add('active');
+      }
     });
 
-    if (tabSections[targetTabId]) tabSections[targetTabId].classList.add('active');
-    if (tabBtns[targetTabId]) tabBtns[targetTabId].classList.add('active');
-
-    // Joriy tabni saqlash
-    localStorage.setItem('mp_active_tab', targetTabId);
+    // Brauzer xotirasiga saqlash
+    localStorage.setItem('mp_active_tab', sectionId);
   }
 
-  // Event listenerlarni ulash
-  Object.keys(tabBtns).forEach(tabId => {
-    if (tabBtns[tabId]) {
-      tabBtns[tabId].addEventListener('click', () => switchTab(tabId));
+  // Tugmalarga hodisa biriktirish
+  Object.keys(tabs).forEach(btnId => {
+    const btn = document.getElementById(btnId);
+    if (btn) {
+      btn.addEventListener('click', () => activateTab(tabs[btnId]));
     }
   });
 
-  // Sahifa yangilanganda saqlangan tabni ochish
+  // Sahifa yuklanganda saqlangan tabni ochish
   const savedTab = localStorage.getItem('mp_active_tab') || 'marketSection';
-  switchTab(savedTab);
+  activateTab(savedTab);
 
   // === 2. AUTHENTICATION (KIRISH / RO'YXATDAN O'TISH) ===
   const authModal = document.getElementById('authModal');
@@ -54,7 +56,6 @@ document.addEventListener('DOMContentLoaded', () => {
   if (openAuthModalBtn) openAuthModalBtn.addEventListener('click', () => authModal.style.display = 'flex');
   if (closeAuthModal) closeAuthModal.addEventListener('click', () => authModal.style.display = 'none');
 
-  // Auth Tab Switch
   const showLoginBtn = document.getElementById('showLoginBtn');
   const showRegisterBtn = document.getElementById('showRegisterBtn');
   const loginForm = document.getElementById('loginForm');
@@ -76,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Register
+  // Ro'yxatdan o'tish
   if (registerForm) {
     registerForm.addEventListener('submit', (e) => {
       e.preventDefault();
@@ -87,14 +88,14 @@ document.addEventListener('DOMContentLoaded', () => {
       const username = rawUser + preset;
 
       if (users.some(u => u.username === username)) {
-        alert('Bunday foydalanuvchi mavjud!');
+        alert('Bunday nikneym band!');
         return;
       }
 
       const newUser = {
         username,
         password: pass,
-        role: users.length === 0 ? 'admin' : 'user' // Birinchi odam admin bo'ladi
+        role: users.length === 0 ? 'admin' : 'user'
       };
 
       users.push(newUser);
@@ -108,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Login
+  // Kirish
   if (loginForm) {
     loginForm.addEventListener('submit', (e) => {
       e.preventDefault();
@@ -123,7 +124,8 @@ document.addEventListener('DOMContentLoaded', () => {
         authModal.style.display = 'none';
         updateUI();
       } else {
-        document.getElementById('loginError').classList.remove('hidden');
+        const err = document.getElementById('loginError');
+        if (err) err.classList.remove('hidden');
       }
     });
   }
@@ -148,7 +150,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (profName) profName.textContent = currentUser.username;
       if (profRoleBadge) profRoleBadge.textContent = currentUser.role === 'admin' ? 'Администратор' : 'Пользователь';
 
-      // Admin panel
       const adminPanel = document.getElementById('adminPanel');
       if (adminPanel) {
         if (currentUser.role === 'admin') {
@@ -168,15 +169,17 @@ document.addEventListener('DOMContentLoaded', () => {
     renderProducts();
   }
 
-  // === 3. SOTISH VA PAROL (PRODAT) ===
+  // === 3. SOTISH (PRODAT) VA PAROL ===
   const sellForm = document.getElementById('sellForm');
   if (sellForm) {
     sellForm.addEventListener('submit', (e) => {
       e.preventDefault();
       if (!currentUser) {
-        alert('Avval hisobingizga kiring!');
+        alert('Tavar sotish uchun avval tizimga kiring!');
         return;
       }
+
+      const passInput = document.getElementById('prodAccessPass');
 
       const newProd = {
         id: Date.now(),
@@ -185,39 +188,43 @@ document.addEventListener('DOMContentLoaded', () => {
         imgUrl: document.getElementById('prodImgUrl').value || 'https://via.placeholder.com/150',
         desc: document.getElementById('prodDesc').value,
         secretData: document.getElementById('prodSecretData').value,
-        accessPass: document.getElementById('prodAccessPass').value.trim(), // PAROL
+        accessPass: passInput ? passInput.value.trim() : '',
         owner: currentUser.username
       };
 
       products.push(newProd);
       localStorage.setItem('mp_products', JSON.stringify(products));
       sellForm.reset();
-      alert('Tavar muvaffaqiyatli qo\'shildi!');
-      switchTab('marketSection');
+      alert('Tavar joylandi!');
+      activateTab('marketSection');
     });
   }
 
-  // === 4. TAVARLARNI RENDER QILISH VA PAROL SO'RASH ===
+  // === 4. TAVARLARNI CHIQARISH VA PAROL BN OCHISH ===
   function renderProducts() {
     const marketGrid = document.getElementById('marketGrid');
     if (!marketGrid) return;
 
-    marketGrid.innerHTML = '';
+    if (products.length === 0) {
+      marketGrid.innerHTML = '<p class="empty-text">Товаров пока нет.</p>';
+      return;
+    }
 
+    marketGrid.innerHTML = '';
     products.forEach(p => {
       const card = document.createElement('div');
-      card.className = 'card-item';
+      card.className = 'card-form';
+      card.style.maxWidth = '100%';
       card.innerHTML = `
-        ${p.type === 'image' ? `<img src="${p.imgUrl}" alt="${p.title}">` : ''}
+        ${p.type === 'image' && p.imgUrl ? `<img src="${p.imgUrl}" style="width:100%; height:140px; object-fit:cover; border-radius:6px;">` : ''}
         <h3>${p.title}</h3>
-        <p>${p.desc}</p>
-        <p><small>Sotuvchi: ${p.owner}</small></p>
+        <p style="color:#a0aec0; font-size:0.9rem;">${p.desc}</p>
+        <p style="font-size:0.8rem; color:#6b7280;">Продавец: ${p.owner}</p>
         <button class="btn btn-primary btn-block open-prod-btn" data-id="${p.id}">Открыть секрет</button>
       `;
       marketGrid.appendChild(card);
     });
 
-    // Kod/Parol bilan ochish
     document.querySelectorAll('.open-prod-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const prodId = Number(e.target.dataset.id);
@@ -225,9 +232,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (prod) {
           if (prod.accessPass) {
-            const userPass = prompt('Bu tavar uchun parolni kiriting:');
+            const userPass = prompt('Введите пароль для доступа к товару:');
             if (userPass !== prod.accessPass) {
-              alert('Noto\'g\'ri parol!');
+              alert('Неверный пароль!');
               return;
             }
           }
@@ -245,8 +252,9 @@ document.addEventListener('DOMContentLoaded', () => {
     userRolesList.innerHTML = '';
     users.forEach(u => {
       const item = document.createElement('div');
-      item.style.padding = '5px 0';
-      item.innerHTML = `<strong>${u.username}</strong> — <i>${u.role}</i>`;
+      item.style.padding = '6px 0';
+      item.style.borderBottom = '1px solid #2a354d';
+      item.innerHTML = `<span>${u.username}</span> — <strong style="color:#2563eb;">${u.role}</strong>`;
       userRolesList.appendChild(item);
     });
   }
